@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { AnimatePresence } from 'framer-motion';
-import { useAuth0 } from '@auth0/auth0-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Menu, 
   LeafIcon, 
@@ -12,6 +10,7 @@ import {
   Users2,
   BookOpen 
 } from 'lucide-react';
+import { useAuth0 } from '@auth0/auth0-react';
 
 
 const TopNavigation = () => {
@@ -19,7 +18,7 @@ const TopNavigation = () => {
   const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: <BarChart2 className="w-4 h-4" /> },
+    { href: "/dashboard", label: "Dashboard", icon: <BarChart2 className="w-4 h-4" /> },  // Using BarChart2
     { href: "/marketplace", label: "Marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
     { href: "/supply-chain", label: "Supply Chain", icon: <TruckIcon className="w-4 h-4" /> },
     { href: "/partners", label: "Partners", icon: <Users2 className="w-4 h-4" /> },
