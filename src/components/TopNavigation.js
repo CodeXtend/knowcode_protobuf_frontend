@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Menu, 
   LeafIcon, 
@@ -10,6 +10,7 @@ import {
   Users2,
   BookOpen 
 } from 'lucide-react';
+import { useAuth0 } from '@auth0/auth0-react';
 
 
 const TopNavigation = () => {
@@ -92,7 +93,8 @@ const TopNavigation = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+      </nav>
+    </div>
   );
 };
 
