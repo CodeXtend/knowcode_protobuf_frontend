@@ -8,17 +8,17 @@ import TopNavigation from "./components/TopNavigation";
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <TopNavigation />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path='/role-selection' element={<RoleSelection/>} />
-          <Route path='/farmer-registration' element={<FarmerRegistration/>} />
-          <Route path="/card" element={<FarmerProductCard />} />
-        </Routes>
-      </div>
-    </Router>
+    <div className="App">
+      <Router>
+        <>
+          <TopNavigation />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/card" element={<FarmerProductCard />} />
+          </Routes>
+        </>
+      </Router>
+    </div>
   );
 }
 

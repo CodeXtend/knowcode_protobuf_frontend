@@ -20,8 +20,9 @@ const Landing_sec5 = () => {
             className="space-y-8"
           >
             <RocketIcon className="w-16 h-16 text-white/80 mx-auto mb-8"/>
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Ready to Transform Agricultural Waste Management?
+            <span className="text-green-50/90 font-semibold mb-2 block">JOIN GREENIFY</span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Ready to Transform Agricultural <br/> Waste Management?
             </h2>
             <p className="text-xl text-green-50/90 mb-12">
               Join thousands of farmers and businesses already benefiting from our platform

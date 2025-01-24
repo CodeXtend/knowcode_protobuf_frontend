@@ -5,18 +5,14 @@ import sadFarmer from '../assets/sadFarmer.png';
 
 const Landing_sec2 = () => {
   return (
-    <div className="bg-gradient-to-b from-white to-red-50/30 py-20">
+    <div className="bg-gradient-to-b from-white to-green-50/30 py-20">
       <div className="container mx-auto px-6">
-        <motion.div 
-          initial={{ y: -50, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-4">
-            The Challenge We Face
+        <motion.div className="text-center mb-16">
+          <span className="text-sm font-semibold text-green-600 mb-2 block">CHALLENGES</span>
+          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+            The Problem We're Solving
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-orange-500 mx-auto rounded-full"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto rounded-full"></div>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-16 items-center">
