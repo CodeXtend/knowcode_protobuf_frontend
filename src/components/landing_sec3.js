@@ -30,8 +30,9 @@ const Landing_sec3 = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
-            Welcome to Greenify
+          <span className="text-sm font-semibold text-green-600 mb-2 block">FEATURES</span>
+          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+            The Greenify Advantage
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto rounded-full"></div>
           <p className="text-xl text-green-700/80 max-w-2xl mx-auto mt-6">

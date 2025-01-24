@@ -6,7 +6,7 @@ import TopNavigation from "./components/TopNavigation";
 
 function App() {
   return (
-    <div className="App">
+    <div className="overflow-x-hidden w-full">
       <Router>
         <>
           <TopNavigation />

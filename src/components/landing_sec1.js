@@ -4,7 +4,7 @@ import { LeafIcon, TruckIcon, RecycleIcon, Sparkles } from 'lucide-react';
 
 const Landing_sec1 = () => {
   return (
-    <div className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 min-h-screen flex items-center justify-center overflow-hidden pt-20 px-4">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
@@ -35,19 +35,19 @@ const Landing_sec1 = () => {
         initial={{ x: -200, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 1 }}
-        className="container mx-auto px-6 grid md:grid-cols-2 gap-10 items-center relative z-10"
+        className="container mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-8 sm:gap-10 items-center relative z-10"
       >
         {/* Text Content */}
-        <div className="space-y-8 backdrop-blur-sm bg-white/30 p-8 rounded-2xl border border-white/20">
+        <div className="space-y-6 sm:space-y-8 backdrop-blur-sm bg-white/30 p-4 sm:p-8 rounded-2xl border border-white/20">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
             className="relative"
           >
-            <Sparkles className="absolute -top-6 -left-6 text-yellow-400 w-12 h-12 animate-pulse" />
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-              Transforming Agricultural Waste
+            <Sparkles className="absolute -top-6 -left-6 text-yellow-400 w-8 sm:w-12 h-8 sm:h-12 animate-pulse" />
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+              Greenify: Transforming Agricultural Waste
             </h1>
           </motion.div>
           
@@ -55,7 +55,7 @@ const Landing_sec1 = () => {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.8 }}
-            className="text-2xl text-green-700/80 font-light"
+            className="text-lg sm:text-xl md:text-2xl text-green-700/80 font-light"
           >
             Optimize waste management, create value, and drive sustainable agriculture
           </motion.p>
@@ -65,7 +65,7 @@ const Landing_sec1 = () => {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.8 }}
-            className="flex space-x-6"
+            className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6"
           >
             <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-lg overflow-hidden shadow-xl transition-all hover:shadow-green-500/30">
               <div className="absolute inset-0 bg-white/30 group-hover:translate-y-12 transition-transform duration-300"></div>
@@ -85,12 +85,12 @@ const Landing_sec1 = () => {
           </motion.div>
         </div>
 
-        {/* Illustration */}
+        {/* Illustration - Hide on mobile */}
         <motion.div 
           initial={{ x: 200, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 1 }}
-          className="relative"
+          className="hidden md:block relative"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-emerald-400/20 blur-3xl transform rotate-12"></div>
           <motion.div 
