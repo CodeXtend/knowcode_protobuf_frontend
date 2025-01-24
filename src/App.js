@@ -14,6 +14,8 @@ function App() {
           <TopNavigation />
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path='/role-selection' element={<RoleSelection/>} />
+          <Route path='/farmer-registration' element={<FarmerRegistration/>} />
             <Route path="/card" element={<FarmerProductCard />} />
           </Routes>
         </>
