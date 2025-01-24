@@ -32,16 +32,16 @@ const Landing_sec4 = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-emerald-50 to-white py-20 relative overflow-hidden">
+    <div className="bg-gradient-to-b from-emerald-50 to-white py-12 sm:py-20 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full">
         <div className="absolute top-10 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"/>
         <div className="absolute top-10 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"/>
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* Stats Section */}
-        <div className="grid md:grid-cols-4 gap-8 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 mb-12 sm:mb-20">
           {stats.map((stat, index) => (
             <motion.div
               key={index}
@@ -62,14 +62,17 @@ const Landing_sec4 = () => {
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">What People Say</h2>
+          <span className="text-sm font-semibold text-green-600 mb-2 block">TESTIMONIALS</span>
+          <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+            What Our Users Say
+          </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto rounded-full"/>
         </motion.div>
 
         {/* Updated grid to show 3 cards per row */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
