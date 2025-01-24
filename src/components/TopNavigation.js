@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { useAuth0 } from '@auth0/auth0-react';
 import { 
   Menu, 
   LeafIcon, 
@@ -92,7 +94,8 @@ const TopNavigation = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+      </nav>
+    </div>
   );
 };
 
