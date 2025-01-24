@@ -40,7 +40,7 @@ const TopNavigation = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: <BarChart2 className="w-4 h-4" /> },
+    { href: "/dashboard", label: "Dashboard", icon: <BarChart2 className="w-4 h-4" /> },  // Using BarChart2
     { href: "/marketplace", label: "Marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
     { href: "/supply-chain", label: "Supply Chain", icon: <TruckIcon className="w-4 h-4" /> },
     { href: "/partners", label: "Partners", icon: <Users2 className="w-4 h-4" /> },
