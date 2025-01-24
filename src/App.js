@@ -8,6 +8,8 @@ import TopNavigation from "./components/TopNavigation.js";
 import Dashboard from './pages/DashboardPage';
 import ResourcesPage from './pages/ResourcesPage';
 import Marketplace from './pages/marketplace';
+import FarmerDetail from './pages/FarmerDetail';
+import AILab from './pages/AILab';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/card" element={<FarmerProductCard />} />
             <Route path="/learn" element={<ResourcesPage />} />
             <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/ai-lab" element={<AILab />} />
+            <Route path="/farmer/:id" element={<FarmerDetail />} />
           </Routes>
         </>
       </Router>

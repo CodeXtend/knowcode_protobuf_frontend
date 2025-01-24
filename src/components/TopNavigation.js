@@ -18,7 +18,8 @@ import {
   MapPin,
   Calendar,
   Sparkles,
-  X
+  X,
+  Brain // Add Brain icon for AI features
 } from 'lucide-react';
 import {
   Avatar,
@@ -44,7 +45,8 @@ const TopNavigation = () => {
     { href: "/marketplace", label: "Marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
     { href: "/supply-chain", label: "Supply Chain", icon: <TruckIcon className="w-4 h-4" /> },
     { href: "/partners", label: "Partners", icon: <Users2 className="w-4 h-4" /> },
-    { href: "/learn", label: "Resources", icon: <BookOpen className="w-4 h-4" /> }
+    { href: "/learn", label: "Resources", icon: <BookOpen className="w-4 h-4" /> },
+    { href: "/ai-lab", label: "AI Lab", icon: <Brain className="w-4 h-4" /> } // Add AI Lab navigation item
   ];
 
   const menuVariants = {
