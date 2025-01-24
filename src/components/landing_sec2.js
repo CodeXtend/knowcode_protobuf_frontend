@@ -7,12 +7,21 @@ const Landing_sec2 = () => {
   return (
     <div className="bg-gradient-to-b from-white to-green-50/30 py-20">
       <div className="container mx-auto px-6">
-        <motion.div className="text-center mb-16">
-          <span className="text-sm font-semibold text-green-600 mb-2 block">CHALLENGES</span>
-          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
-            The Problem We're Solving
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="text-sm font-semibold text-green-600 mb-4 inline-block">
+            CHALLENGES
+          </span>
+          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent pb-2 mb-4">
+            Problems We're Solving
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto rounded-full"></div>
+          <p className="max-w-2xl mx-auto text-gray-600 text-lg mb-8">
+            Addressing critical agricultural waste management challenges that affect farmers and the environment
+          </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-16 items-center">
