@@ -1,18 +1,34 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Menu, 
-  LeafIcon, 
-  BarChart2, 
-  ShoppingBag, 
-  TruckIcon, 
+import { useAuth0 } from '@auth0/auth0-react';
+import {
+  Menu,
+  LeafIcon,
+  BarChart2,
+  ShoppingBag,
+  TruckIcon,
   Users2,
-  BookOpen 
+  BookOpen,
+  LogOut,
 } from 'lucide-react';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "./ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
 const TopNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: <BarChart2 className="w-4 h-4" /> },
@@ -21,6 +37,18 @@ const TopNavigation = () => {
     { href: "/partners", label: "Partners", icon: <Users2 className="w-4 h-4" /> },
     { href: "/learn", label: "Resources", icon: <BookOpen className="w-4 h-4" /> }
   ];
+
+  const handleLogout = () => {
+    logout({ returnTo: window.location.origin });
+  };
+
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 px-2 sm:px-4 py-2 sm:py-4 z-50 flex justify-center overflow-x-hidden">
@@ -37,7 +65,7 @@ const TopNavigation = () => {
               <span className="text-xs text-green-600 hidden sm:block">Smart Waste Management</span>
             </div>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item, index) => (
@@ -51,11 +79,41 @@ const TopNavigation = () => {
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <button className="hidden sm:flex items-center space-x-2 px-4 sm:px-6 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all">
-              <Users2 className="w-4 h-4" />
-              <span>Sign In</span>
-            </button>
-            <button 
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center space-x-2 rounded-xl hover:bg-green-50 px-2 py-1 transition-colors focus:outline-none active:bg-green-50/50">
+                    <Avatar className="h-8 w-8 border-2 border-green-200">
+                      <AvatarImage src={user?.picture} alt={user?.name} />
+                      <AvatarFallback>{getInitials(user?.name || 'User Name')}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:block text-sm font-medium text-gray-700">{user?.name}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-gray-600">
+                    <Users2 className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="text-green-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <button
+                onClick={() => loginWithRedirect()}
+                className="hidden sm:flex items-center space-x-2 px-4 sm:px-6 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all"
+              >
+                <Users2 className="w-4 h-4" />
+                <span>Sign In</span>
+              </button>
+            )}
+
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-xl hover:bg-green-50 text-green-600 transition-colors"
             >
@@ -81,10 +139,23 @@ const TopNavigation = () => {
                   </div>
                 </NavLink>
               ))}
-              <button className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2">
-                <Users2 className="w-4 h-4" />
-                <span>Sign In</span>
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 mt-2 rounded-xl bg-red-500 text-white font-semibold flex items-center justify-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => loginWithRedirect()}
+                  className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2"
+                >
+                  <Users2 className="w-4 h-4" />
+                  <span>Sign In</span>
+                </button>
+              )}
             </div>
           </motion.div>
         )}
