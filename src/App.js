@@ -1,30 +1,24 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
 import Landing from './pages/landing';
 import RoleSelection from './pages/RoleSelection';
 import FarmerRegistration from './pages/FarmerRegistration';
-
 import FarmerProductCard from "./pages/card";
-
 import TopNavigation from "./components/TopNavigation";
 
 function App() {
-
   return (
-    <div className="App">
-          <TopNavigation />
-      <Router>
+    <Router>
+      <div className="App">
+        <TopNavigation />
         <Routes>
-
-            <Route path="/" element={<Landing />} />
-            <Route path='/role-selection' element={<RoleSelection/>} />
-            <Route path='/farmer-registration' element={<FarmerRegistration/>} />
-            <Route path="/card" element={<FarmerProductCard />} />
-
+          <Route path="/" element={<Landing />} />
+          <Route path='/role-selection' element={<RoleSelection/>} />
+          <Route path='/farmer-registration' element={<FarmerRegistration/>} />
+          <Route path="/card" element={<FarmerProductCard />} />
         </Routes>
-      </Router>
-    </div>
+      </div>
+    </Router>
   );
 }
 
