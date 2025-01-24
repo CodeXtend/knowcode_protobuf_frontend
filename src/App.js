@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing_sec1 from './components/landing_sec1';
 
