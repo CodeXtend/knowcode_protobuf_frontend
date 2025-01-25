@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { 
+  Sprout, 
+  MapPin, 
+  Phone, 
+  Trees,
+  ArrowRight,
+  Check,
+  ShieldCheck,
+  GanttChartSquare,
+  Wheat,
+  TreePine,
+  Scale,
+  Ruler,
+  Calendar
+} from 'lucide-react';
 
 const FarmerRegistration = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +25,27 @@ const FarmerRegistration = () => {
     farmAddress: '',
   });
 
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
+
+  const formSteps = [
+    {
+      title: "Personal Details",
+      icon: <Phone className="w-6 h-6 text-white" />,
+      description: "Basic contact information"
+    },
+    {
+      title: "Farm Information",
+      icon: <Trees className="w-6 h-6 text-white" />,
+      description: "Details about your farm"
+    },
+    {
+      title: "Location Details",
+      icon: <MapPin className="w-6 h-6 text-white" />,
+      description: "Your farm's address"
+    }
+  ];
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
@@ -17,6 +53,13 @@ const FarmerRegistration = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Animation variants
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 }
   };
 
   const containerVariants = {
@@ -37,135 +80,274 @@ const FarmerRegistration = () => {
     },
   };
 
+  const farmTypes = [
+    "Organic Farm",
+    "Traditional Farm",
+    "Mixed Farming",
+    "Sustainable Agriculture"
+  ];
+
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-green-100 via-emerald-50 to-blue-100 py-12 px-4 overflow-hidden">
-      {/* Animated Background Elements */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ 
-          opacity: [0.3, 0.6, 0.3],
-          scale: [0.5, 1, 0.5]
-        }}
-        transition={{ 
-          duration: 5, 
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        className="absolute top-10 left-20 w-48 h-48 bg-green-200 rounded-full opacity-30 blur-2xl"
-      />
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ 
-          opacity: [0.3, 0.6, 0.3],
-          scale: [0.5, 1, 0.5]
-        }}
-        transition={{ 
-          duration: 5, 
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        className="absolute bottom-10 right-20 w-48 h-48 bg-blue-200 rounded-full opacity-30 blur-2xl"
-      />
-
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="container mx-auto"
-      >
-        <motion.div 
-          className="max-w-4xl mx-auto bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20"
-          initial={{ scale: 0.95 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.3 }}
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-emerald-50 to-teal-50 pt-20">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-center mb-12"
         >
-          <motion.h1 
-            className="text-5xl font-bold text-center mb-12 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"
-            variants={itemVariants}
-          >
-            Farmer Registration
-          </motion.h1>
-          
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 gap-8"
-              variants={itemVariants}
-            >
-              <div className="form-group">
-                <label className="block text-gray-700 font-semibold mb-3">
-                  Phone Number
-                </label>
-                <motion.input
-                  whileFocus={{ scale: 1.02 }}
-                  type="tel"
-                  name="phoneNo"
-                  value={formData.phoneNo}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
-                  placeholder="Enter your phone number"
-                />
-              </div>
+          <span className="text-sm font-semibold text-green-600 mb-2 block">REGISTRATION</span>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+            Join Our Farmer Network
+          </h1>
+          <p className="text-green-700/80 max-w-2xl mx-auto">
+            Complete your registration to start managing agricultural waste effectively
+          </p>
+        </motion.div>
 
-              <div className="form-group">
-                <label className="block text-gray-700 font-semibold mb-3">
-                  Location
-                </label>
-                <motion.input
-                  whileFocus={{ scale: 1.02 }}
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
-                  placeholder="Enter your location"
-                />
+        {/* Registration Benefits */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+        >
+          {[
+            {
+              icon: <ShieldCheck className="w-6 h-6 text-green-600" />,
+              title: "Verified Profile",
+              description: "Get a verified farmer profile"
+            },
+            {
+              icon: <GanttChartSquare className="w-6 h-6 text-green-600" />,
+              title: "Waste Management",
+              description: "Access smart waste tracking tools"
+            },
+            {
+              icon: <Check className="w-6 h-6 text-green-600" />,
+              title: "Market Access",
+              description: "Connect with potential buyers"
+            }
+          ].map((benefit, index) => (
+            <motion.div
+              key={index}
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-green-100 shadow-sm"
+            >
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                {benefit.icon}
               </div>
+              <h3 className="font-semibold text-gray-800 mb-2">{benefit.title}</h3>
+              <p className="text-gray-600 text-sm">{benefit.description}</p>
             </motion.div>
+          ))}
+        </motion.div>
 
-            <motion.div 
-              className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-8 mt-8 border border-green-100 shadow-lg"
-              variants={itemVariants}
+        {/* Progress Steps */}
+        <div className="flex justify-center mb-8">
+          {formSteps.map((step, index) => (
+            <div key={index} className="flex items-center">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className={`flex flex-col items-center ${
+                  index !== formSteps.length - 1 ? 'w-40' : ''
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  currentStep > index 
+                    ? 'bg-green-600' 
+                    : currentStep === index + 1 
+                    ? 'bg-green-500' 
+                    : 'bg-gray-200'
+                } transition-colors duration-200`}>
+                  {step.icon}
+                </div>
+                <span className="text-sm font-medium text-gray-600 mt-2">{step.title}</span>
+                {index < formSteps.length - 1 && (
+                  <div className={`h-1 w-full mt-4 ${currentStep > index ? 'bg-green-600' : 'bg-gray-200'}`} />
+                )}
+              </motion.div>
+            </div>
+          ))}
+        </div>
+
+        {/* Form Card */}
+        <motion.div
+          className="max-w-4xl mx-auto bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-green-100 p-8"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Current Step Fields */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <h2 className="text-3xl font-bold mb-8 text-gray-800">
-                Farm Details
-              </h2>
-              <div className="space-y-6">
+              {/* Form Fields Based on Current Step */}
+              {currentStep === 1 && (
                 <motion.div 
-                  className="form-group"
-                  whileHover={{ scale: 1.01 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                  variants={itemVariants}
                 >
-                  <label className="block text-gray-700 font-semibold mb-3">
-                    Farm Size
-                  </label>
-                  <motion.input
-                    whileFocus={{ scale: 1.02 }}
-                    type="text"
-                    name="farmSize"
-                    value={formData.farmSize}
-                    onChange={handleChange}
-                    className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
-                    placeholder="Enter farm size in acres"
-                  />
-                </motion.div>
+                  <div className="form-group">
+                    <label className="block text-gray-700 font-semibold mb-3">
+                      Phone Number
+                    </label>
+                    <motion.input
+                      whileFocus={{ scale: 1.02 }}
+                      type="tel"
+                      name="phoneNo"
+                      value={formData.phoneNo}
+                      onChange={handleChange}
+                      className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
 
+                  <div className="form-group">
+                    <label className="block text-gray-700 font-semibold mb-3">
+                      Location
+                    </label>
+                    <motion.input
+                      whileFocus={{ scale: 1.02 }}
+                      type="text"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
+                      placeholder="Enter your location"
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {currentStep === 2 && (
                 <motion.div 
-                  className="form-group"
-                  whileHover={{ scale: 1.01 }}
+                  className="space-y-8"
+                  variants={itemVariants}
                 >
-                  <label className="block text-gray-700 font-semibold mb-3">
-                    Primary Crops
-                  </label>
-                  <motion.input
-                    whileFocus={{ scale: 1.02 }}
-                    type="text"
-                    name="primaryCrops"
-                    value={formData.primaryCrops}
-                    onChange={handleChange}
-                    className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
-                    placeholder="Enter primary crops"
-                  />
-                </motion.div>
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100 shadow-lg">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                        <TreePine className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Farm Details</h2>
+                        <p className="text-sm text-gray-600">Tell us about your agricultural practices</p>
+                      </div>
+                    </div>
 
+                    <div className="grid md:grid-cols-2 gap-8">
+                      {/* Farm Size Input with Icon */}
+                      <motion.div 
+                        className="form-group"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <label className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
+                          <Ruler className="w-4 h-4 text-green-600" />
+                          Farm Size
+                        </label>
+                        <div className="relative">
+                          <motion.input
+                            whileFocus={{ scale: 1.02 }}
+                            type="text"
+                            name="farmSize"
+                            value={formData.farmSize}
+                            onChange={handleChange}
+                            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
+                            placeholder="Enter size in acres"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                            acres
+                          </span>
+                        </div>
+                      </motion.div>
+
+                      {/* Farm Type Selection */}
+                      <motion.div
+                        className="form-group"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <label className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
+                          <Scale className="w-4 h-4 text-green-600" />
+                          Farm Type
+                        </label>
+                        <select
+                          className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300 appearance-none bg-white"
+                          name="farmType"
+                          onChange={handleChange}
+                        >
+                          <option value="">Select farm type</option>
+                          {farmTypes.map((type, index) => (
+                            <option key={index} value={type}>{type}</option>
+                          ))}
+                        </select>
+                      </motion.div>
+
+                      {/* Primary Crops with Tags */}
+                      <motion.div 
+                        className="form-group md:col-span-2"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <label className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
+                          <Wheat className="w-4 h-4 text-green-600" />
+                          Primary Crops
+                        </label>
+                        <div className="relative">
+                          <motion.input
+                            whileFocus={{ scale: 1.02 }}
+                            type="text"
+                            name="primaryCrops"
+                            value={formData.primaryCrops}
+                            onChange={handleChange}
+                            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-300"
+                            placeholder="Enter crops (comma separated)"
+                          />
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <Wheat className="w-5 h-5 text-green-600" />
+                          </div>
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                          Example: Rice, Wheat, Sugarcane
+                        </p>
+                      </motion.div>
+
+                      {/* Harvest Calendar */}
+                      <motion.div 
+                        className="md:col-span-2 bg-green-50/50 rounded-xl p-6 border border-green-100"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <Calendar className="w-5 h-5 text-green-600" />
+                          <h3 className="font-semibold text-gray-800">Harvest Schedule</h3>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          {['Spring', 'Summer', 'Winter'].map((season, index) => (
+                            <motion.div
+                              key={season}
+                              whileHover={{ scale: 1.02 }}
+                              className="flex items-center gap-2 p-3 bg-white rounded-lg border border-green-100 cursor-pointer hover:border-green-400 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                id={season}
+                                className="rounded text-green-600 focus:ring-green-500"
+                              />
+                              <label htmlFor={season} className="text-sm text-gray-700 cursor-pointer">
+                                {season}
+                              </label>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {currentStep === 3 && (
                 <motion.div 
                   className="form-group"
                   whileHover={{ scale: 1.01 }}
@@ -183,21 +365,34 @@ const FarmerRegistration = () => {
                     placeholder="Enter complete farm address"
                   />
                 </motion.div>
-              </div>
+              )}
             </motion.div>
 
-            <motion.button
-              variants={itemVariants}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="w-full mt-10 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white py-5 px-8 rounded-xl text-xl font-bold hover:shadow-lg hover:shadow-green-200 transition-all duration-300"
-            >
-              Submit Registration
-            </motion.button>
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-6">
+              {currentStep > 1 && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setCurrentStep(prev => prev - 1)}
+                  className="px-6 py-3 rounded-xl border-2 border-green-500 text-green-600 font-medium hover:bg-green-50 transition-colors"
+                >
+                  Previous
+                </motion.button>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => currentStep < totalSteps ? setCurrentStep(prev => prev + 1) : handleSubmit()}
+                className="ml-auto px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all flex items-center gap-2"
+              >
+                {currentStep === totalSteps ? 'Complete Registration' : 'Next Step'}
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </div>
           </form>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 };

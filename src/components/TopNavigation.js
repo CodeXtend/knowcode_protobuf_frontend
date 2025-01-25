@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
+
 const TopNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
