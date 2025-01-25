@@ -9,7 +9,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   BarChart,
-  Bar
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
 } from "recharts";
 import {
   Card,
@@ -125,6 +129,32 @@ const calculatePredictions = (analyticsData, statsData) => {
       }
     };
   }
+};
+
+// Add this helper function for pie chart colors
+const COLORS = [
+  '#22c55e', '#15803d', '#059669', '#0d9488', '#0891b2',
+  '#0284c7', '#2563eb', '#4f46e5', '#7c3aed', '#9333ea'
+];
+
+// Add this static data for locations
+const SAMPLE_LOCATION_DATA = [
+  { name: "Mumbai", value: 2500 },
+  { name: "Delhi", value: 2100 },
+  { name: "Bangalore", value: 1800 },
+  { name: "Chennai", value: 1500 },
+  { name: "Pune", value: 1200 },
+  { name: "Hyderabad", value: 1000 },
+  { name: "Kolkata", value: 900 },
+  { name: "Ahmedabad", value: 800 },
+  { name: "Jaipur", value: 700 },
+  { name: "Lucknow", value: 600 }
+];
+
+// Modify the prepareLocationData function
+const prepareLocationData = (locations) => {
+  // Use sample data instead of waiting for API data
+  return SAMPLE_LOCATION_DATA;
 };
 
 export default function Dashboard() {
@@ -394,31 +424,91 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Activity */}
-          <Card className="col-span-3">
+          {/* Replace Recent Activity with Location Waste Distribution */}
+          <Card className="col-span-3 overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-green-800">Recent Activity</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-green-800">Waste by Location</CardTitle>
+                <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                  Top 10 Cities
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {Object.entries(statsData.wasteByType).slice(0, 3).map(([type, amount], i) => (
-                  <motion.div
-                    key={type}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-green-50/50 hover:bg-green-100/50 transition-colors"
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="relative h-[240px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={SAMPLE_LOCATION_DATA}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={3}
+                        dataKey="value"
+                        nameKey="name"
+                        startAngle={90}
+                        endAngle={450}
+                      >
+                        {SAMPLE_LOCATION_DATA.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={COLORS[index % COLORS.length]}
+                            className="hover:opacity-80 transition-opacity"
+                            stroke="white"
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        content={({ payload, label }) => {
+                          if (payload && payload.length) {
+                            return (
+                              <div className="bg-white p-2 shadow-lg rounded-lg border">
+                                <p className="font-medium text-sm">{payload[0].name}</p>
+                                <p className="text-green-600 font-semibold">
+                                  {payload[0].value.toLocaleString()} MT
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                    <div className="text-2xl font-bold text-gray-800">
+                      {SAMPLE_LOCATION_DATA.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-500">Total MT</div>
+                  </div>
+                </div>
+                <div className="space-y-1 max-h-[240px] overflow-y-auto custom-scrollbar">
+                  {SAMPLE_LOCATION_DATA.map((item, index) => (
+                    <LocationStatItem
+                      key={item.name}
+                      name={item.name}
+                      value={item.value}
+                      color={COLORS[index % COLORS.length]}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Updated daily</span>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-1 text-green-600 hover:text-green-700"
                   >
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <Recycle className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{type}</div>
-                      <div className="text-xs text-muted-foreground">{formatNumber(amount)} MT</div>
-                    </div>
-                    <span className="text-xs font-medium text-green-600">Active</span>
-                  </motion.div>
-                ))}
+                    <Filter className="h-3 w-3" />
+                    <span>Filter data</span>
+                  </motion.button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -529,4 +619,42 @@ const PredictionCard = ({ title, prediction, confidence }) => (
     <Progress value={confidence} className="mt-2" />
   </div>
 );
+
+// Add this new component for location stats
+const LocationStatItem = ({ name, value, color, index }) => (
+  <motion.div
+    initial={{ x: -20, opacity: 0 }}
+    animate={{ x: 0, opacity: 1 }}
+    transition={{ delay: index * 0.1 }}
+    className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
+  >
+    <div className="flex items-center gap-2">
+      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+      <span className="text-sm font-medium text-gray-700">{name}</span>
+    </div>
+    <span className="text-sm text-gray-600 font-semibold">{value.toLocaleString()} MT</span>
+  </motion.div>
+);
+
+// Add this CSS somewhere in your styles
+const styles = `
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #22c55e #e2e8f0;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #22c55e;
+    border-radius: 3px;
+  }
+`;
 
