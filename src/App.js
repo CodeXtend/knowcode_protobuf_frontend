@@ -9,6 +9,7 @@ import Dashboard from './pages/DashboardPage';
 import RoleSelection from './pages/RoleSelection';
 import FarmerRegistration from './pages/FarmerRegistration';
 import ResourcesPage from './pages/ResourcesPage';
+import FarmerDashboard from './pages/FarmerDashboard';
 function App() {
 return (
   <div className="App">
@@ -29,6 +30,7 @@ return (
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/ai-lab" element={<AILab />} />
             <Route path="/farmer/:id" element={<FarmerDetail />} />
+            <Route path="/farmerDashboard" element={<FarmerDashboard />} />
           </Routes>
           </>
       </Router>

@@ -12,7 +12,9 @@ root.render(
       domain="dev-rfbxxf1gkoew8irx.jp.auth0.com"
       clientId="yvVlRKXy5vuX83ryGi77Y1rEfkb7FC1c"
       authorizationParams={{
-        redirect_uri: window.location.origin
+        redirect_uri: window.location.origin,
+        audience: 'https://dev-rfbxxf1gkoew8irx.jp.auth0.com/api/v2/',
+        scope: 'openid profile email'
       }}
     >
       <App />
