@@ -1,18 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 import { motion } from 'framer-motion';
 import { Leaf, Building2, ArrowRight, Sprout, Factory } from 'lucide-react';
 import farmer2 from '../assets/farmer2.png';
 
 const RoleSelection = () => {
   const [selectedRole, setSelectedRole] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth0();
 
-  const handleRoleSelect = (role) => {
+  const verifyFarmer = async () => {
+    if (!isAuthenticated || !user) {
+      navigate('/login');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/users/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ auth0Id: user.sub })
+      });
+
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        navigate('/farmerDashboard');
+      } else {
+        navigate('/farmer-registration');
+      }
+    } catch (error) {
+      console.error('Verification failed:', error);
+      navigate('/farmer-registration');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRoleSelect = async (role) => {
     setSelectedRole(role);
     if (role === 'seller') {
-      navigate('/farmer-registration');
-    }else if (role === 'buyer') {
+      await verifyFarmer();
+    } else if (role === 'buyer') {
       navigate('/marketplace');
     }
   };
@@ -35,6 +69,13 @@ const RoleSelection = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 flex items-center justify-center p-4">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        </div>
+      )}
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (

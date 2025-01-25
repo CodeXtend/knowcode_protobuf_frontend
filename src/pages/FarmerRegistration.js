@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 import { 
   Sprout, 
   MapPin, 
@@ -17,6 +19,8 @@ import {
 } from 'lucide-react';
 
 const FarmerRegistration = () => {
+  const navigate = useNavigate();
+  const { user, getAccessTokenSilently } = useAuth0();
   const [formData, setFormData] = useState({
     phoneNo: '',
     location: '',
@@ -46,9 +50,63 @@ const FarmerRegistration = () => {
     }
   ];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      const token = await getAccessTokenSilently();
+      
+      const response = await fetch("https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/users/register/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name,
+          picture: user.picture,
+          auth0Id: user.sub.split("|")[1],
+          role: "farmer",
+          phone: formData.phoneNo,
+          location: formData.location,
+          farmDetails: {
+            location: formData.location,
+            farmSize: formData.farmSize,
+            primaryCrops: formData.primaryCrops.split(',').map(crop => crop.trim()),
+            address: formData.farmAddress,
+            farmType: formData.farmType || "Traditional Farm",
+            harvestSchedule: {
+              spring: false,
+              summer: false,
+              winter: false
+            }
+          },
+          isVerified: false,
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      const userData = await response.json();
+      console.log("Registration successful:", userData);
+
+      if(response.ok){
+        alert("Registration successful");
+      }
+      
+      // Store user data in localStorage
+      localStorage.setItem('user_role', 'seller');
+      localStorage.setItem('user_data', JSON.stringify(userData.data.user));
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      // Handle error (show error message to user)
+    }
   };
 
   const handleChange = (e) => {

@@ -37,6 +37,7 @@ const TopNavigation = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const token = useAuthToken();
   console.log(token);
+  console.log(user);
   
   const navItems = [
     {
