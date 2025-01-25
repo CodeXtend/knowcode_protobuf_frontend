@@ -36,6 +36,8 @@ const TopNavigation = () => {
   const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const token = useAuthToken();
+  console.log(token);
+  
   const navItems = [
     {
       href: "/dashboard",
