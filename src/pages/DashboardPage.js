@@ -29,8 +29,44 @@ import {
   AlertTriangle
 } from "lucide-react";
 
+// Add Skeleton Components
+const SkeletonCard = () => (
+  <div className="bg-white rounded-lg p-4 shadow animate-pulse">
+    <div className="flex justify-between items-start">
+      <div className="space-y-3 w-full">
+        <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+        <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+      </div>
+      <div className="w-8 h-8 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+);
+
+const SkeletonChart = () => (
+  <div className="bg-white rounded-lg p-4 shadow animate-pulse">
+    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+    <div className="h-[300px] bg-gray-200 rounded"></div>
+  </div>
+);
+
+const SkeletonActivity = () => (
+  <div className="flex items-center gap-4">
+    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+    <div className="flex-1 space-y-2">
+      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+    </div>
+  </div>
+);
+
 export default function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState([]);
+  const [statsData, setStatsData] = useState({
+    totalWaste: 0,
+    totalRevenue: 0,
+    statusBreakdown: {},
+    wasteByType: {}
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -54,32 +90,42 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/analytics/monthly');
-        if (!response.ok) throw new Error('Failed to fetch analytics data');
-        
-        const result = await response.json();
-        if (result.status === 'success') {
-          // Transform the data for charts
-          const transformedData = result.data.monthlyData.map(item => ({
+        const [analyticsResponse, statsResponse] = await Promise.all([
+          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/analytics/monthly'),
+          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/stats')
+        ]);
+
+        if (!analyticsResponse.ok || !statsResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const analyticsResult = await analyticsResponse.json();
+        const statsResult = await statsResponse.json();
+
+        if (analyticsResult.status === 'success') {
+          const transformedData = analyticsResult.data.monthlyData.map(item => ({
             month: getMonthName(item.month),
             waste: item.totalQuantity || 0,
             revenue: item.totalRevenue || 0,
-            recycled: (item.totalQuantity || 0) * 0.8, // Assuming 80% recycling rate
+            recycled: (item.totalQuantity || 0) * 0.8,
           }));
-          
           setAnalyticsData(transformedData);
+        }
+
+        if (statsResult.status === 'success') {
+          setStatsData(statsResult.data.stats);
         }
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching analytics:', err);
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAnalytics();
+    fetchData();
   }, []);
 
   const containerVariants = {
@@ -100,10 +146,56 @@ export default function Dashboard() {
     }
   };
 
+  // Replace the loading state with skeleton UI
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600" />
+      <div className="min-h-screen bg-gradient-to-b from-green-50 via-emerald-50 to-teal-50 pt-20">
+        <div className="container py-6">
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+          </div>
+
+          {/* Stats Skeleton */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+            {[...Array(4)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="grid gap-6 md:grid-cols-7">
+            <div className="col-span-4">
+              <SkeletonChart />
+            </div>
+            <div className="col-span-3 bg-white rounded-lg p-4 shadow">
+              <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <SkeletonActivity key={i} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Environmental Impact Skeleton */}
+          <div className="grid gap-6 md:grid-cols-7 mt-6">
+            <div className="col-span-4">
+              <SkeletonChart />
+            </div>
+            <div className="col-span-3">
+              <div className="bg-white rounded-lg p-4 shadow">
+                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-16 bg-gray-200 rounded"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -142,29 +234,29 @@ export default function Dashboard() {
           <QuickStatCard
             icon={<Recycle />}
             title="Total Waste Collected"
-            value={`${formatNumber(totals.totalQuantity)} MT`}
-            change="+12%"
+            value={`${formatNumber(statsData.totalWaste)} MT`}
+            change={`${((analyticsData[analyticsData.length - 1]?.waste || 0) - (analyticsData[analyticsData.length - 2]?.waste || 0)).toFixed(1)}%`}
             color="green"
           />
           <QuickStatCard
             icon={<Factory />}
             title="Processing Centers"
-            value="128"
-            subtext="45 Districts"
+            value={Object.keys(statsData.statusBreakdown).length || 0}
+            subtext={`${Object.values(statsData.wasteByType).length} Types`}
             color="blue"
           />
           <QuickStatCard
             icon={<Wind />}
             title="CO₂ Emissions Saved"
-            value={`${formatNumber(totals.totalQuantity * 0.5)} MT`}
+            value={`${formatNumber(statsData.totalWaste * 0.5)} MT`}
             change="-25%"
             color="emerald"
           />
           <QuickStatCard
             icon={<DollarSign />}
             title="Revenue Generated"
-            value={`₹${formatNumber(totals.totalRevenue)}`}
-            change="+18%"
+            value={`₹${formatNumber(statsData.totalRevenue)}`}
+            change={`${((analyticsData[analyticsData.length - 1]?.revenue || 0) - (analyticsData[analyticsData.length - 2]?.revenue || 0)).toFixed(1)}%`}
             color="purple"
           />
         </motion.div>
@@ -232,28 +324,22 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { type: "Paddy Straw", quantity: "50 MT", status: "Listed", location: "Punjab" },
-                  { type: "Sugarcane Bagasse", quantity: "30 MT", status: "Processing", location: "Maharashtra" },
-                  { type: "Corn Stalks", quantity: "45 MT", status: "Collected", location: "Karnataka" },
-                ].map((item, i) => (
+                {Object.entries(statsData.wasteByType).slice(0, 3).map(([type, amount], i) => (
                   <motion.div
-                    key={i}
+                    key={type}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: i * 0.1 }}
                     className="flex items-center gap-4 p-3 rounded-lg bg-green-50/50 hover:bg-green-100/50 transition-colors"
                   >
                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                      <Recycle className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">{item.type}</div>
-                      <div className="text-xs text-muted-foreground">{item.quantity}</div>
+                      <div className="text-sm font-medium">{type}</div>
+                      <div className="text-xs text-muted-foreground">{formatNumber(amount)} MT</div>
                     </div>
-                    <span className="text-xs font-medium text-green-600">{item.status}</span>
+                    <span className="text-xs font-medium text-green-600">Active</span>
                   </motion.div>
                 ))}
               </div>
