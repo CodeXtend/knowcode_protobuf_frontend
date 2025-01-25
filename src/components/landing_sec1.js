@@ -1,8 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LeafIcon, TruckIcon, RecycleIcon, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Landing_sec1 = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    // Trigger exit animation and navigate to marketplace
+    navigate('/marketplace', { 
+      state: { animateEntrance: true } 
+    });
+  };
+
+  const handleDashboard = () => {
+    // Trigger exit animation and navigate to dashboard
+    navigate('/dashboard', { 
+      state: { animateEntrance: true } 
+    });
+  };
+
   return (
     <div className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 min-h-screen flex items-center justify-center overflow-hidden pt-20 px-4">
       {/* Animated Background Elements */}
@@ -67,7 +84,10 @@ const Landing_sec1 = () => {
             transition={{ delay: 0.9, duration: 0.8 }}
             className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6"
           >
-            <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-lg overflow-hidden shadow-xl transition-all hover:shadow-green-500/30">
+            <button 
+              onClick={handleGetStarted}
+              className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-lg overflow-hidden shadow-xl transition-all hover:shadow-green-500/30"
+            >
               <div className="absolute inset-0 bg-white/30 group-hover:translate-y-12 transition-transform duration-300"></div>
               <div className="flex items-center space-x-2">
                 <LeafIcon className="animate-bounce" />
@@ -75,7 +95,10 @@ const Landing_sec1 = () => {
               </div>
             </button>
             
-            <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-lg overflow-hidden shadow-xl transition-all hover:shadow-blue-500/30">
+            <button 
+              onClick={handleDashboard}
+              className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-lg overflow-hidden shadow-xl transition-all hover:shadow-blue-500/30"
+            >
               <div className="absolute inset-0 bg-white/30 group-hover:translate-y-12 transition-transform duration-300"></div>
               <div className="flex items-center space-x-2">
                 <TruckIcon className="animate-bounce" />
