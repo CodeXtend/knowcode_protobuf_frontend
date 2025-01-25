@@ -1,14 +1,24 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
+import useAuthToken from '../hooks/useAuthToken';
 import { AnimatePresence, motion } from 'framer-motion';
-import { 
-  Menu, 
-  LeafIcon, 
-  BarChart2, 
-  ShoppingBag, 
-  TruckIcon, 
+import {
+  Menu,
+  LeafIcon,
+  BarChart2,
+  ShoppingBag,
+  TruckIcon,
   Users2,
-  BookOpen 
+  BookOpen,
+  Brain,
+  LogOut,
+  X,
+  Mail,
+  Sparkles,
+  Calendar,
+  MapPin,
+  Settings
 } from 'lucide-react';
 import {
   Avatar,
@@ -27,8 +37,8 @@ import {
 const TopNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
-const token = useAuthToken();
-console.log(token);
+  const token = useAuthToken();
+  console.log(token);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const navItems = [
@@ -45,7 +55,7 @@ console.log(token);
       opacity: 0,
       y: -20,
       scale: 0.95,
-      transition: { 
+      transition: {
         duration: 0.2,
         ease: "easeInOut"
       }
@@ -54,7 +64,7 @@ console.log(token);
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { 
+      transition: {
         duration: 0.2,
         ease: "easeOut"
       }
@@ -62,14 +72,14 @@ console.log(token);
   };
 
   const itemVariants = {
-    closed: { 
+    closed: {
       opacity: 0,
       y: -10,
       transition: {
         duration: 0.2
       }
     },
-    open: { 
+    open: {
       opacity: 1,
       y: 0,
       transition: {
@@ -77,7 +87,7 @@ console.log(token);
       }
     }
   };
- const handleLogout = () => {
+  const handleLogout = () => {
     logout({ returnTo: window.location.origin });
   };
 
@@ -154,7 +164,7 @@ console.log(token);
                   </div>
                 </div>
 
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-xl shadow-lg text-white"
                 >
@@ -244,44 +254,10 @@ console.log(token);
                 <span className="text-xs text-green-600 hidden sm:block">Smart Waste Management</span>
               </div>
             </Link>
-            
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item, index) => (
-              <NavLink key={index} href={item.href}>
-                <div className="flex items-center space-x-1">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-              </NavLink>
-            ))}
-          </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button className="hidden sm:flex items-center space-x-2 px-4 sm:px-6 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all">
-              <Users2 className="w-4 h-4" />
-              <span>Sign In</span>
-            </button>
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:bg-green-50 text-green-600 transition-colors"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-
-      {/* Mobile Navigation with AnimatePresence */}
-      <AnimatePresence mode="wait">
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden absolute top-full left-0 right-0 mt-2 mx-2 p-4 bg-white/90 backdrop-blur-lg rounded-xl shadow-lg border border-green-100/20"
-          >
-            <div className="flex flex-col space-y-3">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
               {navItems.map((item, index) => (
                 <NavLink key={index} href={item.href}>
                   <div className="flex items-center space-x-1">
@@ -290,85 +266,51 @@ console.log(token);
                   </div>
                 </NavLink>
               ))}
-              <button className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2">
+            </div>
+
+            <div className="flex items-center space-x-2 sm:space-x-4" onClick={() => loginWithRedirect()}>
+              <button className="hidden sm:flex items-center space-x-2 px-4 sm:px-6 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all">
                 <Users2 className="w-4 h-4" />
                 <span>Sign In</span>
               </button>
-            </div>
-          </motion.div>
-
-
-             )} {/* Mobile Navigation with AnimatePresence */}
-      <AnimatePresence mode="wait">
-        {isMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            />
-            
-            {/* Mobile Menu */}
-            <motion.div
-              variants={menuVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="md:hidden fixed top-[4.5rem] left-0 right-0 z-50 bg-white/70 backdrop-blur-lg shadow-xl border-t border-green-100/20 mx-2 rounded-2xl overflow-hidden"
-            >
-              <motion.div 
-                className="flex flex-col p-4 space-y-2"
-                initial="closed"
-                animate="open"
-                exit="closed"
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden p-2 rounded-xl hover:bg-green-50 text-green-600 transition-colors"
               >
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    variants={itemVariants}
-                  >
-                    <Link
-                      to={item.href}
-                      className="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 hover:text-green-600 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.icon}
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  </motion.div>
-                ))}
-                <motion.div
-                  variants={itemVariants}
-                >
-                 {isAuthenticated ? (
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 mt-2 rounded-xl bg-red-500 text-white font-semibold flex items-center justify-center space-x-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => loginWithRedirect()}
-                  className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2"
-                >
-                  <Users2 className="w-4 h-4" />
-                  <span>Sign In</span>
-                </button>
-              )}
-                </motion.div>
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation with AnimatePresence */}
+          <AnimatePresence mode="wait">
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="md:hidden absolute top-full left-0 right-0 mt-2 mx-2 p-4 bg-white/90 backdrop-blur-lg rounded-xl shadow-lg border border-green-100/20"
+              >
+                <div className="flex flex-col space-y-3" onClick={() => loginWithRedirect()}>
+                  {navItems.map((item, index) => (
+                    <NavLink key={index} href={item.href}>
+                      <div className="flex items-center space-x-1">
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </div>
+                    </NavLink>
+                  ))}
+                  <button className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2">
+                    <Users2 className="w-4 h-4" />
+                    <span>Sign In</span>
+                  </button>
+                </div>
               </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            )}
+          </AnimatePresence>
+        </nav>
+      </div>
       <ProfileDrawer />
-    </div>
     </>
   );
 };
