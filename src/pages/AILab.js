@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+// Add these imports
+import {
+  BarChart,
+  Bar,
+  Cell,
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  XAxis,
+  YAxis,
+  CartesianGrid
+} from 'recharts';
 import {
   Brain,
   Sprout,
@@ -8,19 +22,11 @@ import {
   Wheat,
   Droplet,
   Loader,
-  ArrowRight,
-  BrainCircuit
+  BrainCircuit,
+  TrendingUp,
+  DollarSign,
+  Recycle
 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend
-} from 'recharts';
 
 const AILab = () => {
   const [formData, setFormData] = useState({
@@ -31,89 +37,140 @@ const AILab = () => {
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [predictiveMode, setPredictiveMode] = useState(false);
+  const [error, setError] = useState(null);
 
   const soilConditions = [
-    "Clay",
-    "Sandy",
-    "Loamy",
-    "Silt",
-    "Peaty",
-    "Chalky",
+    'Sandy',
+    'Clay',
+    'Loamy'
   ];
 
   const cropTypes = [
     "Rice",
     "Wheat",
+    "Maize",
+    "Sorghum",
+    "Pearl Millet",
+    "Finger Millet",
+    "Chickpeas",
+    "Pigeon Peas",
+    "Lentils",
+    "Black Gram",
+    "Green Gram",
+    "Groundnut",
+    "Rapeseed",
+    "Mustard",
+    "Soybean",
+    "Sunflower",
+    "Sesame",
     "Sugarcane",
     "Cotton",
-    "Maize",
-    "Pulses",
-  ];
-
-  const predictiveData = [
-    { month: 'April', waste: 480, recycled: 380, efficiency: 79 },
-    { month: 'May', waste: 520, recycled: 425, efficiency: 82 },
-    { month: 'June', waste: 580, recycled: 490, efficiency: 84 },
-    { month: 'July', waste: 490, recycled: 420, efficiency: 86 },
-    { month: 'August', waste: 540, recycled: 475, efficiency: 88 },
-    { month: 'September', waste: 560, recycled: 505, efficiency: 90 }
+    "Jute",
+    "Tobacco",
+    "Tea",
+    "Coffee",
+    "Rubber",
+    "Coconut",
+    "Arecanut",
+    "Mango",
+    "Banana",
+    "Apple",
+    "Grapes",
+    "Orange",
+    "Pineapple",
+    "Guava",
+    "Papaya",
+    "Litchi",
+    "Pomegranate",
+    "Potato",
+    "Tomato",
+    "Onion",
+    "Brinjal",
+    "Okra",
+    "Cabbage",
+    "Cauliflower",
+    "Carrot",
+    "Peas",
+    "Spinach",
+    "Chillies",
+    "Turmeric",
+    "Ginger",
+    "Garlic",
+    "Cardamom",
+    "Black Pepper",
+    "Coriander",
+    "Cumin",
+    "Fenugreek",
+    "Rose",
+    "Marigold",
+    "Jasmine",
+    "Chrysanthemum",
+    "Gladiolus"
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setResult({
-        recommendation: "Based on your input, we recommend...",
-        sustainability_score: 85,
-        waste_estimation: "approximately 500kg per harvest",
-        predictive_analysis: true
-      });
-      setPredictiveMode(true);
-      setLoading(false);
-    }, 2000);
-  };
+    setError(null);
 
-  const handlePredictive = () => {
-    setLoading(true);
-    // Simulate predictive analysis API call
-    setTimeout(() => {
-      setPredictiveMode(true);
+    try {
+      const response = await fetch('http://localhost:5000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          location: formData.location,
+          land_area: parseFloat(formData.land_area),
+          soil_condition: formData.soil_condition.toLowerCase(),
+          crop_type: formData.crop_type.toLowerCase(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch predictions');
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      setError('Failed to get predictions. Please try again.');
+      console.error('Error:', err);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 px-6 pb-20">
-      <div className="container mx-auto max-w-6xl">
-        {/* Header Section */}
+    <div className="pt-16 min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center p-2 rounded-xl bg-green-100 mb-4">
-            <BrainCircuit className="w-8 h-8 text-green-600" />
+          <div className="inline-flex items-center justify-center p-2 rounded-xl bg-green-100 mb-3">
+            <BrainCircuit className="w-6 h-6 text-green-600" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-3">
             AI Agricultural Assistant
           </h1>
-          <p className="text-green-700/80 text-lg max-w-2xl mx-auto">
-            Get personalized recommendations for agricultural waste management using our advanced AI system
+          <p className="text-base md:text-lg text-green-700/80 max-w-2xl mx-auto">
+            Get personalized recommendations for agricultural waste management
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Form Section */}
+        {/* Main Content */}
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+          {/* Form Card */}
           <motion.div
-            initial={{ x: -50, opacity: 0 }}
+            initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-green-100"
+            className="bg-white rounded-2xl shadow-lg p-6 lg:sticky lg:top-24 h-fit"
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-4">
                 <div>
                   <label className="flex items-center text-gray-700 font-medium mb-2">
@@ -197,129 +254,241 @@ const AILab = () => {
             </form>
           </motion.div>
 
-          {/* Results Section */}
+          {/* Results Card */}
           <motion.div
-            initial={{ x: 50, opacity: 0 }}
+            initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.3 }}
             className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-sm rounded-2xl p-8 border border-green-100 shadow-xl"
           >
-            {result && !predictiveMode ? (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handlePredictive}
-                className="w-full px-6 py-4 mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium flex items-center justify-center space-x-2 hover:shadow-lg hover:shadow-blue-500/30 transition-all"
-              >
-                <Brain className="w-5 h-5" />
-                <span>Generate Predictive Analysis</span>
-              </motion.button>
-            ) : null}
-
-            {predictiveMode ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <div className="bg-white/80 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Predictive Analysis</h3>
-                  <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={predictiveData}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                        <XAxis dataKey="month" />
-                        <YAxis yAxisId="left" />
-                        <YAxis yAxisId="right" orientation="right" />
-                        <Tooltip />
-                        <Legend />
-                        <Line
-                          yAxisId="left"
-                          type="monotone"
-                          dataKey="waste"
-                          stroke="#ef4444"
-                          strokeWidth={2}
-                          name="Waste Generated (kg)"
-                        />
-                        <Line
-                          yAxisId="left"
-                          type="monotone"
-                          dataKey="recycled"
-                          stroke="#22c55e"
-                          strokeWidth={2}
-                          name="Waste Recycled (kg)"
-                        />
-                        <Line
-                          yAxisId="right"
-                          type="monotone"
-                          dataKey="efficiency"
-                          stroke="#3b82f6"
-                          strokeWidth={2}
-                          name="Efficiency (%)"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-white/80 rounded-xl p-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Peak Efficiency</h4>
-                    <div className="text-3xl font-bold text-green-600">90%</div>
-                    <p className="text-xs text-gray-500 mt-1">Expected by September</p>
-                  </div>
-                  <div className="bg-white/80 rounded-xl p-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Waste Reduction</h4>
-                    <div className="text-3xl font-bold text-blue-600">15%</div>
-                    <p className="text-xs text-gray-500 mt-1">Monthly average</p>
-                  </div>
-                  <div className="bg-white/80 rounded-xl p-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Cost Savings</h4>
-                    <div className="text-3xl font-bold text-purple-600">₹12K</div>
-                    <p className="text-xs text-gray-500 mt-1">Projected monthly</p>
-                  </div>
-                </div>
-
-                <div className="bg-white/80 rounded-xl p-6">
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">AI Recommendations</h4>
-                  <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      Implement crop rotation to improve soil health
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      Optimize irrigation scheduling
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      Consider organic farming practices
-                    </li>
-                  </ul>
-                </div>
-              </motion.div>
-            ) : result ? (
+            {result ? (
               <div className="space-y-6">
-                <div className="bg-white/80 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">AI Recommendation</h3>
-                  <p className="text-gray-600">{result.recommendation}</p>
+                {/* Summary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-green-50 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-green-600" />
+                      <p className="text-sm font-medium text-green-800">Yield</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">{result.predicted_yield} tons</p>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-amber-50 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Recycle className="w-4 h-4 text-amber-600" />
+                      <p className="text-sm font-medium text-amber-800">Waste</p>
+                    </div>
+                    <p className="text-xl font-bold text-amber-700">{result.predicted_waste} tons</p>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-blue-50 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="w-4 h-4 text-blue-600" />
+                      <p className="text-sm font-medium text-blue-800">Profit</p>
+                    </div>
+                    <p className="text-xl font-bold text-blue-700">₹{result.total_profit}</p>
+                  </motion.div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/80 rounded-xl p-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Sustainability Score</h4>
-                    <div className="text-3xl font-bold text-green-600">{result.sustainability_score}%</div>
+                {/* Charts */}
+                <div className="grid md:grid-cols-2 gap-4 mt-6">
+                  {/* Profit Distribution */}
+                  <div className="bg-white/80 rounded-xl p-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Profit Distribution</h4>
+                    <div className="h-[250px] w-full">
+                      <ResponsiveContainer>
+                        <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                          <Pie
+                            data={[
+                              { 
+                                name: 'Crop Profit', 
+                                value: parseFloat(result.crop_profit),
+                              },
+                              { 
+                                name: 'Waste Profit', 
+                                value: parseFloat(result.waste_profit),
+                              }
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            <Cell fill="#059669" />
+                            <Cell fill="#D97706" />
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value) => `₹${parseInt(value).toLocaleString()}`}
+                            contentStyle={{ 
+                              backgroundColor: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                          />
+                          <Legend 
+                            verticalAlign="bottom"
+                            align="center"
+                            layout="horizontal"
+                            iconType="circle"
+                            iconSize={8}
+                            wrapperStyle={{
+                              paddingTop: '20px'
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
-                  <div className="bg-white/80 rounded-xl p-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">Waste Estimation</h4>
-                    <div className="text-3xl font-bold text-green-600">{result.waste_estimation}</div>
+
+                  {/* Price Analysis */}
+                  <div className="bg-white/80 rounded-xl p-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Price Comparison (per ton)</h4>
+                    <div className="h-[250px] w-full">
+                      <ResponsiveContainer>
+                        <BarChart
+                          data={[
+                            { 
+                              name: 'Crop Price', 
+                              value: parseFloat(result.price_per_ton),
+                            },
+                            { 
+                              name: 'Waste Price', 
+                              value: parseFloat(result.waste_price_per_ton),
+                            }
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                          <XAxis 
+                            dataKey="name" 
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                          />
+                          <Tooltip
+                            formatter={(value) => `₹${parseInt(value).toLocaleString()}`}
+                            contentStyle={{ 
+                              backgroundColor: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                            labelStyle={{ color: '#6B7280' }}
+                          />
+                          <Bar 
+                            dataKey="value"
+                            radius={[4, 4, 0, 0]}
+                          >
+                            <Cell fill="#059669" />
+                            <Cell fill="#D97706" />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
+
+                {/* Summary */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-green-100 shadow-lg"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-1.5 bg-green-100 rounded-lg">
+                      <Brain className="w-4 h-4 text-green-600" />
+                    </div>
+                    <h4 className="text-base font-semibold text-gray-800">Smart Analysis Summary</h4>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                      <p className="text-sm text-green-800 font-medium">
+                        Analysis for {result.crop} cultivation in {result.location}
+                      </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div className="p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Expected Yield Revenue</p>
+                        <p className="text-base font-semibold text-green-700">
+                          {result.predicted_yield} tons
+                        </p>
+                        <p className="text-sm font-medium text-green-600">
+                          ₹{parseInt(result.crop_profit).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Waste Management</p>
+                        <p className="text-base font-semibold text-amber-700">
+                          {result.predicted_waste} tons
+                        </p>
+                        <p className="text-sm font-medium text-amber-600">
+                          ₹{parseInt(result.waste_profit).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Total Earnings</p>
+                        <p className="text-base font-semibold text-blue-700">
+                          ₹{parseInt(result.total_profit).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-blue-600/80">Combined Revenue</p>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+                        <p className="text-xs font-medium text-blue-800">Key Insights</p>
+                      </div>
+                      <ul className="space-y-1.5">
+                        <li className="flex items-center gap-2 text-xs text-gray-600">
+                          <div className="w-1 h-1 rounded-full bg-green-500"></div>
+                          Main crop revenue contributes {((result.crop_profit / result.total_profit) * 100).toFixed(1)}% of total earnings
+                        </li>
+                        <li className="flex items-center gap-2 text-xs text-gray-600">
+                          <div className="w-1 h-1 rounded-full bg-amber-500"></div>
+                          Waste management adds ₹{parseInt(result.waste_profit).toLocaleString()} in additional revenue
+                        </li>
+                        <li className="flex items-center gap-2 text-xs text-gray-600">
+                          <div className="w-1 h-1 rounded-full bg-blue-500"></div>
+                          Price per ton: Crop ₹{parseInt(result.price_per_ton).toLocaleString()} | Waste ₹{parseInt(result.waste_price_per_ton).toLocaleString()}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            ) : error ? (
+              <div className="p-4 bg-red-50 rounded-xl text-red-600 text-sm">
+                {error}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 text-gray-500">
-                <Sprout className="w-16 h-16 text-green-500/50" />
-                <p>Submit the form to get AI-powered recommendations</p>
+              <div className="h-full flex flex-col items-center justify-center text-gray-500 p-8">
+                <Sprout className="w-12 h-12 text-green-500/50 mb-3" />
+                <p className="text-sm">Submit the form to get AI-powered recommendations</p>
               </div>
             )}
           </motion.div>
