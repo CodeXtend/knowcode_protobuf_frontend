@@ -2,41 +2,22 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useEffect } from "react";
 
 const useAuthToken = () => {
-  const { isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [token, setToken] = useState(null);
 
   useEffect(() => {
     const fetchToken = async () => {
       if (isAuthenticated) {
         try {
-          const token = await getAccessTokenSilently({
-            authorizationParams: {
-              audience: 'https://dev-rfbxxf1gkoew8irx.jp.auth0.com/api/v2/',
-            },
-          });
+          const token = await getAccessTokenSilently();
           setToken(token);
         } catch (error) {
-          if (error.error === "consent_required") {
-            try {
-              const token = await getAccessTokenWithPopup({
-                authorizationParams: {
-                  audience: 'https://dev-rfbxxf1gkoew8irx.jp.auth0.com/api/v2/',
-                },
-              });
-              setToken(token);
-            } catch (error) {
-              loginWithRedirect({
-                authorizationParams: {
-                  audience: 'https://dev-rfbxxf1gkoew8irx.jp.auth0.com/api/v2/',
-                },
-              });
-            }
-          }
+          console.error("Error getting token:", error);
         }
       }
     };
     fetchToken();
-  }, [isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup, loginWithRedirect]);
+  }, [isAuthenticated, getAccessTokenSilently]);
 
   return token;
 };

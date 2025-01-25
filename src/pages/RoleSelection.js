@@ -12,6 +12,8 @@ const RoleSelection = () => {
     setSelectedRole(role);
     if (role === 'seller') {
       navigate('/farmer-registration');
+    }else if (role === 'buyer') {
+      navigate('/marketplace');
     }
   };
 

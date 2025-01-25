@@ -28,13 +28,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import useAuthToken from "../hooks/useAuthToken";
 
 
 const TopNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  // const token =
+  const token = useAuthToken();
   const navItems = [
     {
       href: "/dashboard",
@@ -42,19 +43,9 @@ const TopNavigation = () => {
       icon: <BarChart2 className="w-4 h-4" />,
     },
     {
-      href: "/marketplace",
+      href: "/role-selection",
       label: "Marketplace",
       icon: <ShoppingBag className="w-4 h-4" />,
-    },
-    {
-      href: "/supply-chain",
-      label: "Supply Chain",
-      icon: <TruckIcon className="w-4 h-4" />,
-    },
-    {
-      href: "/partners",
-      label: "Partners",
-      icon: <Users2 className="w-4 h-4" />,
     },
     {
       href: "/learn",
@@ -106,20 +97,7 @@ const TopNavigation = () => {
   };
 
   const handleLogin = () => {
-    loginWithRedirect().then(async () => {
-      await fetch("http://localhost:5000/api/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({
-          email: user.email,
-          name: user.name,
-          picture: user.picture,
-        }),
-      });
-    });
+    loginWithRedirect()
   };
 
   const getInitials = (name) => {
