@@ -1,10 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, MapPin, Phone, TreesIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Marketplace = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const animateEntrance = location.state?.animateEntrance;
+
   // Example data - replace with your actual data
   const farmersData = [
     {
@@ -35,7 +38,23 @@ const Marketplace = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 px-6 pb-20">
+    <motion.div 
+      initial={animateEntrance ? { 
+        scale: 1.2,
+        opacity: 0,
+        // rotate: -5
+      } : false}
+      animate={{ 
+        scale: 1,
+        opacity: 1,
+        rotate: 0
+      }}
+      transition={{ 
+        duration: 0.8,
+        ease: "easeOut"
+      }}
+      className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 px-6 pb-20"
+    >
       <div className="container mx-auto">
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
@@ -126,7 +145,7 @@ const Marketplace = () => {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

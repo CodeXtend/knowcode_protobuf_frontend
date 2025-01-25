@@ -1,23 +1,21 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from './pages/landing';
-import RoleSelection from './pages/RoleSelection';
-import FarmerRegistration from './pages/FarmerRegistration';
-import FarmerProductCard from "./components/card";
-import TopNavigation from "./components/TopNavigation.js";
-import Dashboard from './pages/DashboardPage';
-import ResourcesPage from './pages/ResourcesPage';
 import Marketplace from './pages/marketplace';
 import FarmerDetail from './pages/FarmerDetail';
 import AILab from './pages/AILab';
-
+import TopNavigation from './components/TopNavigation';
+import Dashboard from './pages/DashboardPage';
+import RoleSelection from './pages/RoleSelection';
+import FarmerRegistration from './pages/FarmerRegistration';
+import ResourcesPage from './pages/ResourcesPage';
 function App() {
-  return (
-    <div className="App">
-      <Router>
-        <>
-          <TopNavigation />
-          <Routes>
+return (
+  <div className="App">
+    <Router>
+      <>
+        <TopNavigation />
+<Routes>
             <Route path="/">
               <Route path='/' element={<Landing/>} />
               <Route path='/dashboard' element={<Dashboard/>} />
@@ -26,13 +24,13 @@ function App() {
             <Route path='/role-selection' element={<RoleSelection/>} />
             <Route path='/dashboard' element={<Dashboard/>} />
           <Route path='/farmer-registration' element={<FarmerRegistration/>} />
-            <Route path="/card" element={<FarmerProductCard />} />
+            {/* <Route path="/card" element={<FarmerProductCar />} /> */}
             <Route path="/learn" element={<ResourcesPage />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/ai-lab" element={<AILab />} />
             <Route path="/farmer/:id" element={<FarmerDetail />} />
           </Routes>
-        </>
+          </>
       </Router>
     </div>
   );
