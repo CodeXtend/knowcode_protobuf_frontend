@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth0 } from '@auth0/auth0-react';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   Menu,
   LeafIcon,
@@ -12,20 +12,14 @@ import {
   BookOpen,
   LogOut,
   Settings,
-  User,
   Mail,
-  Phone,
   MapPin,
   Calendar,
   Sparkles,
   X,
-  Brain // Add Brain icon for AI features
-} from 'lucide-react';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "./ui/avatar"
+  Brain,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,20 +27,40 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
+} from "./ui/dropdown-menu";
 
 const TopNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, loginWithRedirect, logout, isAuthenticated } = useAuth0();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
+  // const token =
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: <BarChart2 className="w-4 h-4" /> },  // Using BarChart2
-    { href: "/marketplace", label: "Marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
-    { href: "/supply-chain", label: "Supply Chain", icon: <TruckIcon className="w-4 h-4" /> },
-    { href: "/partners", label: "Partners", icon: <Users2 className="w-4 h-4" /> },
-    { href: "/learn", label: "Resources", icon: <BookOpen className="w-4 h-4" /> },
-    { href: "/ai-lab", label: "AI Lab", icon: <Brain className="w-4 h-4" /> } // Add AI Lab navigation item
+    {
+      href: "/dashboard",
+      label: "Dashboard",
+      icon: <BarChart2 className="w-4 h-4" />,
+    },
+    {
+      href: "/marketplace",
+      label: "Marketplace",
+      icon: <ShoppingBag className="w-4 h-4" />,
+    },
+    {
+      href: "/supply-chain",
+      label: "Supply Chain",
+      icon: <TruckIcon className="w-4 h-4" />,
+    },
+    {
+      href: "/partners",
+      label: "Partners",
+      icon: <Users2 className="w-4 h-4" />,
+    },
+    {
+      href: "/learn",
+      label: "Resources",
+      icon: <BookOpen className="w-4 h-4" />,
+    },
+    { href: "/ai-lab", label: "AI Lab", icon: <Brain className="w-4 h-4" /> },
   ];
 
   const menuVariants = {
@@ -54,47 +68,64 @@ const TopNavigation = () => {
       opacity: 0,
       y: -20,
       scale: 0.95,
-      transition: { 
+      transition: {
         duration: 0.2,
-        ease: "easeInOut"
-      }
+        ease: "easeInOut",
+      },
     },
     open: {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { 
+      transition: {
         duration: 0.2,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   const itemVariants = {
-    closed: { 
+    closed: {
       opacity: 0,
       y: -10,
       transition: {
-        duration: 0.2
-      }
+        duration: 0.2,
+      },
     },
-    open: { 
+    open: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.4
-      }
-    }
+        duration: 0.4,
+      },
+    },
   };
- const handleLogout = () => {
+  const handleLogout = () => {
     logout({ returnTo: window.location.origin });
+  };
+
+  const handleLogin = () => {
+    loginWithRedirect().then(async () => {
+      await fetch("http://localhost:5000/api/v1/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name,
+          picture: user.picture,
+        }),
+      });
+    });
   };
 
   const getInitials = (name) => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase();
   };
 
@@ -139,13 +170,17 @@ const TopNavigation = () => {
                     >
                       <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
                         <AvatarImage src={user?.picture} alt={user?.name} />
-                        <AvatarFallback>{getInitials(user?.name || 'User Name')}</AvatarFallback>
+                        <AvatarFallback>
+                          {getInitials(user?.name || "User Name")}
+                        </AvatarFallback>
                       </Avatar>
                       <div className="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-4 border-white" />
                     </motion.div>
                   </div>
                   <div className="text-center space-y-2">
-                    <h3 className="text-xl font-bold text-gray-800">{user?.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-800">
+                      {user?.name}
+                    </h3>
                     <p className="text-green-600 font-medium">Premium Member</p>
                   </div>
                 </div>
@@ -163,7 +198,7 @@ const TopNavigation = () => {
                   </div>
                 </div>
 
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-xl shadow-lg text-white"
                 >
@@ -183,8 +218,16 @@ const TopNavigation = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { icon: <Calendar className="w-5 h-5" />, label: "Joined", value: "Mar 2024" },
-                    { icon: <MapPin className="w-5 h-5" />, label: "Location", value: "Bangalore" },
+                    {
+                      icon: <Calendar className="w-5 h-5" />,
+                      label: "Joined",
+                      value: "Mar 2024",
+                    },
+                    {
+                      icon: <MapPin className="w-5 h-5" />,
+                      label: "Location",
+                      value: "Bangalore",
+                    },
                   ].map((item, index) => (
                     <motion.div
                       key={index}
@@ -195,7 +238,9 @@ const TopNavigation = () => {
                         {item.icon}
                         <span className="text-sm">{item.label}</span>
                       </div>
-                      <p className="font-medium text-gray-800 mt-1">{item.value}</p>
+                      <p className="font-medium text-gray-800 mt-1">
+                        {item.value}
+                      </p>
                     </motion.div>
                   ))}
                 </div>
@@ -226,7 +271,10 @@ const TopNavigation = () => {
     <DropdownMenuContent align="end" className="w-56">
       <DropdownMenuLabel>My Account</DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => setIsProfileOpen(true)} className="text-gray-600">
+      <DropdownMenuItem
+        onClick={() => setIsProfileOpen(true)}
+        className="text-gray-600"
+      >
         <Users2 className="mr-2 h-4 w-4" />
         Profile
       </DropdownMenuItem>
@@ -250,58 +298,62 @@ const TopNavigation = () => {
                 <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   Greenify
                 </span>
-                <span className="text-xs text-green-600 hidden sm:block">Smart Waste Management</span>
+                <span className="text-xs text-green-600 hidden sm:block">
+                  Smart Waste Management
+                </span>
               </div>
             </Link>
-            
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item, index) => (
-              <NavLink key={index} href={item.href}>
-                <div className="flex items-center space-x-1">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-              </NavLink>
-            ))}
-          </div>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
+              {navItems.map((item, index) => (
+                <NavLink key={index} href={item.href}>
+                  <div className="flex items-center space-x-1">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
+                </NavLink>
+              ))}
+            </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center space-x-2 rounded-xl hover:bg-green-50 px-2 py-1 transition-colors focus:outline-none active:bg-green-50/50">
-                    <Avatar className="h-8 w-8 border-2 border-green-200">
-                      <AvatarImage src={user?.picture} alt={user?.name} />
-                      <AvatarFallback>{getInitials(user?.name || 'User Name')}</AvatarFallback>
-                    </Avatar>
-                    <span className="hidden sm:block text-sm font-medium text-gray-700">{user?.name}</span>
-                  </button>
-                </DropdownMenuTrigger>
-                {dropdownContent}
-              </DropdownMenu>
-            ) : (
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center space-x-2 rounded-xl hover:bg-green-50 px-2 py-1 transition-colors focus:outline-none active:bg-green-50/50">
+                      <Avatar className="h-8 w-8 border-2 border-green-200">
+                        <AvatarImage src={user?.picture} alt={user?.name} />
+                        <AvatarFallback>
+                          {getInitials(user?.name || "User Name")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden sm:block text-sm font-medium text-gray-700">
+                        {user?.name}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  {dropdownContent}
+                </DropdownMenu>
+              ) : (
+                <button
+                  onClick={() => handleLogin()}
+                  className="hidden sm:flex items-center space-x-2 px-4 sm:px-6 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all"
+                >
+                  <Users2 className="w-4 h-4" />
+                  <span>Sign In</span>
+                </button>
+              )}
+
               <button
-                onClick={() => loginWithRedirect()}
-                className="hidden sm:flex items-center space-x-2 px-4 sm:px-6 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden p-2 rounded-xl hover:bg-green-50 text-green-600 transition-colors"
               >
-                <Users2 className="w-4 h-4" />
-                <span>Sign In</span>
+                <Menu className="h-6 w-6" />
               </button>
-            )}
-
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:bg-green-50 text-green-600 transition-colors"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
             </div>
           </div>
         </nav>
-  
-          {/* Mobile Navigation */}
+        {/* Mobile Navigation */}
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -328,7 +380,7 @@ const TopNavigation = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => loginWithRedirect()}
+                  onClick={() => handleLogin()}
                   className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2"
                 >
                   <Users2 className="w-4 h-4" />
@@ -337,79 +389,73 @@ const TopNavigation = () => {
               )}
             </div>
           </motion.div>
+        )}{" "}
+        {/* Mobile Navigation with AnimatePresence */}
+        <AnimatePresence mode="wait">
+          {isMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setIsMenuOpen(false)}
+                className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+              />
 
-
-             )} {/* Mobile Navigation with AnimatePresence */}
-      <AnimatePresence mode="wait">
-        {isMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            />
-            
-            {/* Mobile Menu */}
-            <motion.div
-              variants={menuVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="md:hidden fixed top-[4.5rem] left-0 right-0 z-50 bg-white/70 backdrop-blur-lg shadow-xl border-t border-green-100/20 mx-2 rounded-2xl overflow-hidden"
-            >
-              <motion.div 
-                className="flex flex-col p-4 space-y-2"
+              {/* Mobile Menu */}
+              <motion.div
+                variants={menuVariants}
                 initial="closed"
                 animate="open"
                 exit="closed"
+                className="md:hidden fixed top-[4.5rem] left-0 right-0 z-50 bg-white/70 backdrop-blur-lg shadow-xl border-t border-green-100/20 mx-2 rounded-2xl overflow-hidden"
               >
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    variants={itemVariants}
-                  >
-                    <Link
-                      to={item.href}
-                      className="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 hover:text-green-600 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.icon}
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  </motion.div>
-                ))}
                 <motion.div
-                  variants={itemVariants}
+                  className="flex flex-col p-4 space-y-2"
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
                 >
-                 {isAuthenticated ? (
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 mt-2 rounded-xl bg-red-500 text-white font-semibold flex items-center justify-center space-x-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => loginWithRedirect()}
-                  className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2"
-                >
-                  <Users2 className="w-4 h-4" />
-                  <span>Sign In</span>
-                </button>
-              )}
+                  {navItems.map((item, index) => (
+                    <motion.div key={index} variants={itemVariants}>
+                      <Link
+                        to={item.href}
+                        className="flex items-center space-x-3 p-3 rounded-xl hover:bg-green-50 text-gray-600 hover:text-green-600 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.icon}
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    </motion.div>
+                  ))}
+                  <motion.div variants={itemVariants}>
+                    {isAuthenticated ? (
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 mt-2 rounded-xl bg-red-500 text-white font-semibold flex items-center justify-center space-x-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleLogin()}
+                        className="w-full px-4 py-2 mt-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center space-x-2"
+                      >
+                        <Users2 className="w-4 h-4" />
+                        <span>Sign In</span>
+                      </button>
+                    )}
+                  </motion.div>
                 </motion.div>
               </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-      <ProfileDrawer />
-    </div>
+            </>
+          )}
+        </AnimatePresence>
+        <ProfileDrawer />
+      </div>
     </>
   );
 };
