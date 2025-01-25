@@ -59,6 +59,74 @@ const SkeletonActivity = () => (
   </div>
 );
 
+// Add this helper function at the top level
+const calculatePredictions = (analyticsData, statsData) => {
+  try {
+    // Safe calculation helper
+    const calculatePercentageChange = (current, previous) => {
+      if (!current || !previous || previous === 0) return 0;
+      return ((current - previous) / previous * 100).toFixed(1);
+    };
+
+    // Get last two months data safely
+    const currentMonth = analyticsData[analyticsData.length - 1] || { waste: 0, revenue: 0 };
+    const previousMonth = analyticsData[analyticsData.length - 2] || { waste: 0, revenue: 0 };
+
+    // Calculate trends safely
+    const wasteGrowth = calculatePercentageChange(currentMonth.waste, previousMonth.waste);
+    const revenueTrend = calculatePercentageChange(currentMonth.revenue, previousMonth.revenue);
+
+    // Safe calculations for efficiency
+    const totalWaste = statsData?.totalWaste || 0;
+    const totalRevenue = statsData?.totalRevenue || 0;
+    const revenuePerTon = totalWaste > 0 ? Math.floor(totalRevenue / totalWaste) : 0;
+
+    return {
+      wasteForecast: {
+        title: "Waste Generation Trend",
+        prediction: parseFloat(wasteGrowth) !== 0 
+          ? `${wasteGrowth > 0 ? 'Increasing' : 'Decreasing'} trend with ${Math.abs(wasteGrowth)}% ${wasteGrowth > 0 ? 'growth' : 'reduction'} in waste generation`
+          : "Stable waste generation pattern",
+        confidence: 85
+      },
+      efficiency: {
+        title: "Collection Efficiency",
+        prediction: revenuePerTon > 0
+          ? `Current revenue per ton is ₹${revenuePerTon.toLocaleString()}, with optimization potential`
+          : "Establishing baseline efficiency metrics",
+        confidence: 78
+      },
+      revenue: {
+        title: "Revenue Forecast",
+        prediction: parseFloat(revenueTrend) !== 0
+          ? `${revenueTrend > 0 ? 'Upward' : 'Downward'} trend with ${Math.abs(revenueTrend)}% ${revenueTrend > 0 ? 'increase' : 'decrease'} in revenue`
+          : "Stable revenue pattern",
+        confidence: 82
+      }
+    };
+  } catch (error) {
+    console.error('Prediction calculation error:', error);
+    // Fallback predictions if calculation fails
+    return {
+      wasteForecast: {
+        title: "Waste Generation Trend",
+        prediction: "Analyzing waste generation patterns",
+        confidence: 70
+      },
+      efficiency: {
+        title: "Collection Efficiency",
+        prediction: "Calculating efficiency metrics",
+        confidence: 70
+      },
+      revenue: {
+        title: "Revenue Forecast",
+        prediction: "Analyzing revenue patterns",
+        confidence: 70
+      }
+    };
+  }
+};
+
 export default function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState([]);
   const [statsData, setStatsData] = useState({
@@ -69,6 +137,7 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [predictions, setPredictions] = useState(null);
 
   // Calculate total values for quick stats
   const calculateTotals = (data) => {
@@ -127,6 +196,14 @@ export default function Dashboard() {
 
     fetchData();
   }, []);
+
+  // Add effect to calculate predictions when data changes
+  useEffect(() => {
+    if (analyticsData.length > 0 && statsData) {
+      const calculatedPredictions = calculatePredictions(analyticsData, statsData);
+      setPredictions(calculatedPredictions);
+    }
+  }, [analyticsData, statsData]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -390,28 +467,36 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* AI Insights */}
+          {/* Prediction */}
           <Card className="col-span-3">
             <CardHeader>
-              <CardTitle className="text-green-800">AI Predictions</CardTitle>
+              <CardTitle className="text-green-800">Predictions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <PredictionCard
-                  title="Waste Generation Forecast"
-                  prediction="Expected 15% increase in paddy waste next month"
-                  confidence={85}
-                />
-                <PredictionCard
-                  title="Optimal Collection Routes"
-                  prediction="3 new efficient routes identified"
-                  confidence={92}
-                />
-                <PredictionCard
-                  title="Market Price Prediction"
-                  prediction="Price increase expected for composted waste"
-                  confidence={78}
-                />
+                {predictions ? (
+                  <>
+                    <PredictionCard
+                      title={predictions.wasteForecast.title}
+                      prediction={predictions.wasteForecast.prediction}
+                      confidence={predictions.wasteForecast.confidence}
+                    />
+                    <PredictionCard
+                      title={predictions.efficiency.title}
+                      prediction={predictions.efficiency.prediction}
+                      confidence={predictions.efficiency.confidence}
+                    />
+                    <PredictionCard
+                      title={predictions.revenue.title}
+                      prediction={predictions.revenue.prediction}
+                      confidence={predictions.revenue.confidence}
+                    />
+                  </>
+                ) : (
+                  <div className="text-center text-gray-500 py-4">
+                    Calculating predictions...
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
