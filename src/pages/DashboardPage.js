@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   AreaChart,
@@ -29,17 +29,75 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-// Updated data to match real agricultural waste metrics
-const analyticsData = [
-  { month: "Jan", waste: 35000, recycled: 24000, revenue: 15000 },
-  { month: "Feb", waste: 30000, recycled: 21000, revenue: 13000 },
-  { month: "Mar", waste: 45000, recycled: 38000, revenue: 25000 },
-  { month: "Apr", waste: 28000, recycled: 19000, revenue: 12000 },
-  { month: "May", waste: 38000, recycled: 32000, revenue: 20000 },
-  { month: "Jun", waste: 42000, recycled: 35000, revenue: 22000 },
-];
-
 export default function Dashboard() {
+  const [analyticsData, setAnalyticsData] = useState([]);
+  const [statsData, setStatsData] = useState({
+    totalWaste: 0,
+    totalRevenue: 0,
+    statusBreakdown: {},
+    wasteByType: {}
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Calculate total values for quick stats
+  const calculateTotals = (data) => {
+    return data.reduce((acc, month) => ({
+      totalQuantity: (acc.totalQuantity || 0) + (month.totalQuantity || 0),
+      totalRevenue: (acc.totalRevenue || 0) + (month.totalRevenue || 0)
+    }), { totalQuantity: 0, totalRevenue: 0 });
+  };
+
+  // Convert month number to name
+  const getMonthName = (monthNum) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[monthNum - 1];
+  };
+
+  // Add a number formatting helper
+  const formatNumber = (value) => {
+    return !value || isNaN(value) ? 0 : value.toLocaleString();
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [analyticsResponse, statsResponse] = await Promise.all([
+          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/analytics/monthly'),
+          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/stats')
+        ]);
+
+        if (!analyticsResponse.ok || !statsResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const analyticsResult = await analyticsResponse.json();
+        const statsResult = await statsResponse.json();
+
+        if (analyticsResult.status === 'success') {
+          const transformedData = analyticsResult.data.monthlyData.map(item => ({
+            month: getMonthName(item.month),
+            waste: item.totalQuantity || 0,
+            revenue: item.totalRevenue || 0,
+            recycled: (item.totalQuantity || 0) * 0.8,
+          }));
+          setAnalyticsData(transformedData);
+        }
+
+        if (statsResult.status === 'success') {
+          setStatsData(statsResult.data.stats);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -58,6 +116,25 @@ export default function Dashboard() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-600">Error: {error}</div>
+      </div>
+    );
+  }
+
+  // Calculate totals for quick stats
+  const totals = calculateTotals(analyticsData);
+
   return (
     <motion.div
       initial="hidden"
@@ -74,14 +151,6 @@ export default function Dashboard() {
             </h1>
             <p className="text-green-700/80">Transform waste into sustainable opportunities</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" className="border-green-600 text-green-700">
-              <Filter className="mr-2 h-4 w-4" /> Filter Region
-            </Button>
-            <Button className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/30">
-              <Plus className="mr-2 h-4 w-4" /> Register Waste
-            </Button>
-          </div>
         </motion.div>
 
         {/* Quick Stats */}
@@ -89,29 +158,29 @@ export default function Dashboard() {
           <QuickStatCard
             icon={<Recycle />}
             title="Total Waste Collected"
-            value="350,000 MT"
-            change="+12%"
+            value={`${formatNumber(statsData.totalWaste)} MT`}
+            change={`${((analyticsData[analyticsData.length - 1]?.waste || 0) - (analyticsData[analyticsData.length - 2]?.waste || 0)).toFixed(1)}%`}
             color="green"
           />
           <QuickStatCard
             icon={<Factory />}
             title="Processing Centers"
-            value="128"
-            subtext="45 Districts"
+            value={Object.keys(statsData.statusBreakdown).length || 0}
+            subtext={`${Object.values(statsData.wasteByType).length} Types`}
             color="blue"
           />
           <QuickStatCard
             icon={<Wind />}
             title="CO₂ Emissions Saved"
-            value="1,250 MT"
+            value={`${formatNumber(statsData.totalWaste * 0.5)} MT`}
             change="-25%"
             color="emerald"
           />
           <QuickStatCard
             icon={<DollarSign />}
             title="Revenue Generated"
-            value="₹2.5M"
-            change="+18%"
+            value={`₹${formatNumber(statsData.totalRevenue)}`}
+            change={`${((analyticsData[analyticsData.length - 1]?.revenue || 0) - (analyticsData[analyticsData.length - 2]?.revenue || 0)).toFixed(1)}%`}
             color="purple"
           />
         </motion.div>
@@ -123,10 +192,6 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Waste Collection Analytics</CardTitle>
-                <Button variant="outline" size="sm">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -138,28 +203,37 @@ export default function Dashboard() {
                         <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
                         <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
                       </linearGradient>
-                      <linearGradient id="colorRecycled" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                     <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
+                    <YAxis yAxisId="left" orientation="left" stroke="#22c55e" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" />
+                    <Tooltip 
+                      formatter={(value) => {
+                        return !value || isNaN(value) ? '0' : value.toLocaleString();
+                      }}
+                    />
                     <Area
+                      yAxisId="left"
                       type="monotone"
                       dataKey="waste"
                       stroke="#22c55e"
                       fillOpacity={1}
                       fill="url(#colorWaste)"
+                      name="Waste (MT)"
                     />
                     <Area
+                      yAxisId="right"
                       type="monotone"
-                      dataKey="recycled"
+                      dataKey="revenue"
                       stroke="#3b82f6"
                       fillOpacity={1}
-                      fill="url(#colorRecycled)"
+                      fill="url(#colorRevenue)"
+                      name="Revenue (₹)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -174,28 +248,22 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { type: "Paddy Straw", quantity: "50 MT", status: "Listed", location: "Punjab" },
-                  { type: "Sugarcane Bagasse", quantity: "30 MT", status: "Processing", location: "Maharashtra" },
-                  { type: "Corn Stalks", quantity: "45 MT", status: "Collected", location: "Karnataka" },
-                ].map((item, i) => (
+                {Object.entries(statsData.wasteByType).slice(0, 3).map(([type, amount], i) => (
                   <motion.div
-                    key={i}
+                    key={type}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: i * 0.1 }}
                     className="flex items-center gap-4 p-3 rounded-lg bg-green-50/50 hover:bg-green-100/50 transition-colors"
                   >
                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                      <Recycle className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">{item.type}</div>
-                      <div className="text-xs text-muted-foreground">{item.quantity}</div>
+                      <div className="text-sm font-medium">{type}</div>
+                      <div className="text-xs text-muted-foreground">{formatNumber(amount)} MT</div>
                     </div>
-                    <span className="text-xs font-medium text-green-600">{item.status}</span>
+                    <span className="text-xs font-medium text-green-600">Active</span>
                   </motion.div>
                 ))}
               </div>
