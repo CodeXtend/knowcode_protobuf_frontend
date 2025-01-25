@@ -31,12 +31,6 @@ import {
 
 export default function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState([]);
-  const [statsData, setStatsData] = useState({
-    totalWaste: 0,
-    totalRevenue: 0,
-    statusBreakdown: {},
-    wasteByType: {}
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -60,42 +54,32 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAnalytics = async () => {
       try {
-        const [analyticsResponse, statsResponse] = await Promise.all([
-          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/analytics/monthly'),
-          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/stats')
-        ]);
-
-        if (!analyticsResponse.ok || !statsResponse.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const analyticsResult = await analyticsResponse.json();
-        const statsResult = await statsResponse.json();
-
-        if (analyticsResult.status === 'success') {
-          const transformedData = analyticsResult.data.monthlyData.map(item => ({
+        const response = await fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/analytics/monthly');
+        if (!response.ok) throw new Error('Failed to fetch analytics data');
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          // Transform the data for charts
+          const transformedData = result.data.monthlyData.map(item => ({
             month: getMonthName(item.month),
             waste: item.totalQuantity || 0,
             revenue: item.totalRevenue || 0,
-            recycled: (item.totalQuantity || 0) * 0.8,
+            recycled: (item.totalQuantity || 0) * 0.8, // Assuming 80% recycling rate
           }));
+          
           setAnalyticsData(transformedData);
-        }
-
-        if (statsResult.status === 'success') {
-          setStatsData(statsResult.data.stats);
         }
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching data:', err);
+        console.error('Error fetching analytics:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchAnalytics();
   }, []);
 
   const containerVariants = {
@@ -158,29 +142,29 @@ export default function Dashboard() {
           <QuickStatCard
             icon={<Recycle />}
             title="Total Waste Collected"
-            value={`${formatNumber(statsData.totalWaste)} MT`}
-            change={`${((analyticsData[analyticsData.length - 1]?.waste || 0) - (analyticsData[analyticsData.length - 2]?.waste || 0)).toFixed(1)}%`}
+            value={`${formatNumber(totals.totalQuantity)} MT`}
+            change="+12%"
             color="green"
           />
           <QuickStatCard
             icon={<Factory />}
             title="Processing Centers"
-            value={Object.keys(statsData.statusBreakdown).length || 0}
-            subtext={`${Object.values(statsData.wasteByType).length} Types`}
+            value="128"
+            subtext="45 Districts"
             color="blue"
           />
           <QuickStatCard
             icon={<Wind />}
             title="CO₂ Emissions Saved"
-            value={`${formatNumber(statsData.totalWaste * 0.5)} MT`}
+            value={`${formatNumber(totals.totalQuantity * 0.5)} MT`}
             change="-25%"
             color="emerald"
           />
           <QuickStatCard
             icon={<DollarSign />}
             title="Revenue Generated"
-            value={`₹${formatNumber(statsData.totalRevenue)}`}
-            change={`${((analyticsData[analyticsData.length - 1]?.revenue || 0) - (analyticsData[analyticsData.length - 2]?.revenue || 0)).toFixed(1)}%`}
+            value={`₹${formatNumber(totals.totalRevenue)}`}
+            change="+18%"
             color="purple"
           />
         </motion.div>
@@ -248,22 +232,28 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(statsData.wasteByType).slice(0, 3).map(([type, amount], i) => (
+                {[
+                  { type: "Paddy Straw", quantity: "50 MT", status: "Listed", location: "Punjab" },
+                  { type: "Sugarcane Bagasse", quantity: "30 MT", status: "Processing", location: "Maharashtra" },
+                  { type: "Corn Stalks", quantity: "45 MT", status: "Collected", location: "Karnataka" },
+                ].map((item, i) => (
                   <motion.div
-                    key={type}
+                    key={i}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: i * 0.1 }}
                     className="flex items-center gap-4 p-3 rounded-lg bg-green-50/50 hover:bg-green-100/50 transition-colors"
                   >
                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <Recycle className="h-5 w-5 text-green-600" />
+                      <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">{type}</div>
-                      <div className="text-xs text-muted-foreground">{formatNumber(amount)} MT</div>
+                      <div className="text-sm font-medium">{item.type}</div>
+                      <div className="text-xs text-muted-foreground">{item.quantity}</div>
                     </div>
-                    <span className="text-xs font-medium text-green-600">Active</span>
+                    <span className="text-xs font-medium text-green-600">{item.status}</span>
                   </motion.div>
                 ))}
               </div>
