@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth0 } from '@auth0/auth0-react';
 import { useParams } from 'react-router-dom';
+import {  Calendar } from 'lucide-react';
 import { 
   User, MapPin, Phone, TreePine, Scale, 
-  Package, Calendar, Plus, Trash2
+  Package, Plus, Trash2, Mail, Sprout, BarChart, Award
 } from 'lucide-react';
 
 const FarmerDashboard = () => {
-  const { id } = useParams();
+  const { user } = useAuth0();
   const [farmer, setFarmer] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAddWasteModal, setShowAddWasteModal] = useState(false);
   const [newWaste, setNewWaste] = useState({
     type: '',
@@ -17,31 +21,79 @@ const FarmerDashboard = () => {
     availableFrom: '',
     description: ''
   });
-
-  const [wasteListing, setWasteListing] = useState([
-    {
-      id: 1,
-      type: 'Crop Residue',
-      quantity: '500 kg',
-      price: '₹2000/ton',
-      availableFrom: '2024-02-01',
-      description: 'Fresh crop residue from wheat harvest'
-    }
-  ]);
+  const [wasteListing, setWasteListing] = useState([]);
 
   useEffect(() => {
-    // Fetch farmer details using id
-    // For now using mock data
-    setFarmer({
-      name: 'John Doe',
-      phone: '+91 9876543210',
-      location: 'Maharashtra, India',
-      farmSize: '50 acres',
-      farmType: 'Organic Farm',
-      primaryCrops: ['Wheat', 'Rice', 'Sugarcane'],
-      address: '123 Farm Road, Rural District'
-    });
-  }, [id]);
+    const fetchFarmerData = async () => {
+      if (!user?.sub) return;
+
+      try {
+        const auth0Id = user.sub.split('|')[1];
+        const response = await fetch(
+          `https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/users/data/${auth0Id}`
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch farmer data');
+        }
+
+        const { data } = await response.json();
+        setFarmer({
+          name: data.name,
+          phone: data.phone,
+          location: data.location,
+          picture: data.picture,
+          farmDetails: {
+            farmSize: data.farmDetails.farmSize,
+            farmType: data.farmDetails.farmType,
+            primaryCrops: data.farmDetails.primaryCrops,
+            address: data.farmDetails.address
+          }
+        });
+
+        // Set waste listings if they exist
+        if (data.wasteListing && Array.isArray(data.wasteListing)) {
+          setWasteListing(data.wasteListing);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching farmer data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFarmerData();
+  }, [user]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-red-50 text-red-500 p-4 rounded-lg">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!farmer) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">No farmer data found</div>
+      </div>
+    );
+  }
 
   const handleAddWaste = (e) => {
     e.preventDefault();
@@ -56,14 +108,6 @@ const FarmerDashboard = () => {
     setShowAddWasteModal(false);
   };
 
-  if (!farmer) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 pb-12 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -74,12 +118,20 @@ const FarmerDashboard = () => {
           className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8"
         >
           <div className="flex items-start gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center">
-              <User className="w-10 h-10 text-white" />
+            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center overflow-hidden">
+              {farmer.picture ? (
+                <img 
+                  src={farmer.picture} 
+                  alt={farmer.name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-10 h-10 text-white" />
+              )}
             </div>
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-800 mb-2">{farmer.name}</h1>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="w-4 h-4" />
                   {farmer.location}
@@ -89,12 +141,32 @@ const FarmerDashboard = () => {
                   {farmer.phone}
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
+                  <Mail className="w-4 h-4" />
+                  {farmer.email}
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
                   <TreePine className="w-4 h-4" />
-                  {farmer.farmType}
+                  {farmer.farmDetails.farmType}
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <Scale className="w-4 h-4" />
-                  {farmer.farmSize}
+                  {farmer.farmDetails.farmSize}
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Calendar className="w-4 h-4" />
+                  {farmer.experience} Years Experience
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Sprout className="w-4 h-4" />
+                  {farmer.primaryCrops}
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <BarChart className="w-4 h-4" />
+                  Annual Revenue: ₹{farmer.revenue}
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Award className="w-4 h-4" />
+                  {farmer.certification || 'No Certifications'}
                 </div>
               </div>
             </div>

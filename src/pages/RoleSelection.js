@@ -24,19 +24,19 @@ const RoleSelection = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ auth0Id: user.sub })
+        body: JSON.stringify({ auth0Id: user.sub.split('|')[1] }),
       });
 
       const data = await response.json();
       
-      if (data.status === 'success') {
+      if (data.data.exists === true) {
         navigate('/farmerDashboard');
       } else {
-        navigate('/farmer-registration');
+        navigate('/farmer-registration', { state: { selectedRole: 'farmer' } });
       }
     } catch (error) {
       console.error('Verification failed:', error);
-      navigate('/farmer-registration');
+      navigate('/farmer-registration', { state: { selectedRole: 'farmer' } });
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +44,7 @@ const RoleSelection = () => {
 
   const handleRoleSelect = async (role) => {
     setSelectedRole(role);
-    if (role === 'seller') {
+    if (role === 'farmer') {
       await verifyFarmer();
     } else if (role === 'buyer') {
       navigate('/marketplace');
@@ -131,11 +131,11 @@ const RoleSelection = () => {
             whileHover={{ scale: 1.02, y: -5 }}
             whileTap={{ scale: 0.98 }}
             className={`group cursor-pointer rounded-2xl backdrop-blur-sm ${
-              selectedRole === 'seller'
+              selectedRole === 'farmer'
                 ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-500 shadow-lg shadow-green-500/20'
                 : 'bg-white/80 border border-green-100 hover:border-green-300'
             } p-8 transition-all duration-300`}
-            onClick={() => handleRoleSelect('seller')}
+            onClick={() => handleRoleSelect('farmer')}
           >
             <div className="flex flex-col items-center space-y-6">
               <motion.div 
