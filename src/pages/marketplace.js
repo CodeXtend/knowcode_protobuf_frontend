@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, MapPin, Phone, TreesIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Marketplace = () => {
+  const navigate = useNavigate();
   // Example data - replace with your actual data
   const farmersData = [
     {
@@ -27,6 +29,10 @@ const Marketplace = () => {
     },
     // Add more farmer data as needed
   ];
+
+  const handleContactFarmer = (farmerId) => {
+    navigate(`/farmer/${farmerId + 1}`); // Adding 1 to match with display Farm ID
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 px-6 pb-20">
@@ -109,7 +115,10 @@ const Marketplace = () => {
                   <Phone className="h-4 w-4" />
                   <span>{farmer.phone}</span>
                 </button>
-                <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all">
+                <button 
+                  onClick={() => handleContactFarmer(index)}
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all"
+                >
                   Contact Farmer
                 </button>
               </div>
