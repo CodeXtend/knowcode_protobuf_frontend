@@ -674,14 +674,6 @@ const LocationCard = ({ locationData }) => (
       <div className="mt-4 pt-4 border-t">
         <div className="flex justify-between items-center text-xs text-gray-500">
           <span>Live data</span>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-1 text-green-600 hover:text-green-700"
-          >
-            <Filter className="h-3 w-3" />
-            <span>Filter districts</span>
-          </motion.button>
         </div>
       </div>
     </CardContent>
