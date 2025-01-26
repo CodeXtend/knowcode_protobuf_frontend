@@ -1,8 +1,10 @@
 import React from 'react';
+import {useNavigate} from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { RocketIcon, ArrowRight, PlayCircle } from 'lucide-react';
 
 const Landing_sec5 = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-gradient-to-br from-green-900 to-emerald-800 py-20 relative overflow-hidden">
       {/* Decorative elements */}
@@ -30,11 +32,13 @@ const Landing_sec5 = () => {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <motion.button
+              
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                
                 className="group bg-white text-green-800 px-8 py-4 rounded-full font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center space-x-2"
               >
-                <span>Get Started Now</span>
+                <span onClick={() => navigate('role-selection')}>Get Started Now</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform"/>
               </motion.button>
 
