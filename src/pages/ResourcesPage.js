@@ -79,7 +79,7 @@ const ResourcesPage = () => {
           className="text-center mb-12"
         >
           <span className="text-sm font-semibold text-green-600 mb-2 block">RESOURCES</span>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4 pb-1">
             Learning Center
           </h1>
           <p className="text-green-700/80 max-w-2xl mx-auto">
