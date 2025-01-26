@@ -7,6 +7,7 @@ const WasteDetail = () => {
   const { id } = useParams();
   const [wasteData, setWasteData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [contact, setContact] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const WasteDetail = () => {
 
         // Extract the waste details from the nested structure
         setWasteData(data.data.wasteInfo.details);
+        setContact(data.data.wasteInfo.farmerContact);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err.message);
@@ -35,12 +37,33 @@ const WasteDetail = () => {
   }, [id]);
 
   const handleWhatsAppContact = () => {
+    console.log('contact', contact.phone);
+
     // Format the message
-    const message = `Hi, I'm interested in purchasing ${wasteData.quantity} ${wasteData.unit} of ${wasteData.wasteType} from your farm in ${wasteData.location.district}. Is this still available?`;
-    
+    const message = `
+Hello! I found your listing on AgroWaste Connect.
+
+*Inquiry Details:*
+• Product: ${wasteData.wasteType} (${wasteData.cropType})
+• Quantity: ${wasteData.quantity} ${wasteData.unit}
+• Listed Price: ₹${wasteData.price} per ${wasteData.unit}
+• Location: ${wasteData.location.district}, ${wasteData.location.state}
+
+I'm interested in purchasing this agricultural waste from your farm. 
+Could you please confirm:
+1. Current availability
+2. Price confirmation
+3. Possible pickup/delivery options
+
+Looking forward to your response.
+
+Reference ID: ${wasteData._id.slice(-6)}
+    `.trim();
+
+
     // Create WhatsApp URL (add your phone number format validation as needed)
-    const whatsappUrl = `https://wa.me/${wasteData.phone}?text=${encodeURIComponent(message)}`;
-    
+    const whatsappUrl = `https://wa.me/${contact.phone}?text=${encodeURIComponent(message)}`;
+
     // Open WhatsApp in new tab
     window.open(whatsappUrl, '_blank');
   };
@@ -80,7 +103,7 @@ const WasteDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 px-6 pb-20">
       {/* Animated background elements */}
-      <motion.div 
+      <motion.div
         className="absolute inset-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -116,7 +139,7 @@ const WasteDetail = () => {
           className="bg-white/70 backdrop-blur-xl rounded-3xl border border-green-100 shadow-2xl p-8"
         >
           {/* Header Section */}
-          <motion.div 
+          <motion.div
             className="flex items-center space-x-6 mb-8"
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -139,7 +162,7 @@ const WasteDetail = () => {
           {/* Grid Layout for Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column */}
-            <motion.div 
+            <motion.div
               className="space-y-6"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -170,11 +193,10 @@ const WasteDetail = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Status:</span>
-                    <span className={`px-2 py-1 rounded-full ${
-                      wasteData.status === 'available' ? 'bg-green-100 text-green-700' :
-                      wasteData.status === 'booked' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full ${wasteData.status === 'available' ? 'bg-green-100 text-green-700' :
+                        wasteData.status === 'booked' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                      }`}>
                       {wasteData.status}
                     </span>
                   </div>
@@ -183,7 +205,7 @@ const WasteDetail = () => {
             </motion.div>
 
             {/* Right Column */}
-            <motion.div 
+            <motion.div
               className="space-y-6"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -215,7 +237,7 @@ const WasteDetail = () => {
               )}
 
               {wasteData.status === 'available' && (
-                <motion.button 
+                <motion.button
                   onClick={handleWhatsAppContact}
                   className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center justify-center space-x-2"
                   whileHover={{ scale: 1.02 }}
