@@ -1,58 +1,79 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, MapPin, Phone, TreesIcon } from 'lucide-react';
+import { Search, Filter, MapPin, Phone, TreesIcon, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { format } from 'date-fns';
 
 const Marketplace = () => {
+  const [wasteListings, setWasteListings] = useState([]);  // Initialize as empty array
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const animateEntrance = location.state?.animateEntrance;
 
-  // Example data - replace with your actual data
-  const farmersData = [
-    {
-      phone: "+91 9876543210",
-      location: "Maharashtra, India",
-      farmSize: "50 acres",
-      primaryCrops: "Wheat, Rice, Sugarcane",
-      farmAddress: "123 Farm Road, Rural District",
-      wasteTypes: ["Crop Residue", "Organic Waste"],
-      availableQuantity: "500 kg",
-      price: "₹2000/ton"
-    },
-    {
-      phone: "+91 9876543211",
-      location: "Punjab, India",
-      farmSize: "75 acres",
-      primaryCrops: "Cotton, Wheat",
-      farmAddress: "456 Agriculture Lane, Rural Area",
-      wasteTypes: ["Cotton Stalks", "Wheat Straw"],
-      availableQuantity: "750 kg",
-      price: "₹1800/ton"
-    },
-    // Add more farmer data as needed
-  ];
+  useEffect(() => {
+    fetchWasteListings();
+  }, []);
 
-  const handleContactFarmer = (farmerId) => {
-    navigate(`/farmer/${farmerId + 1}`); // Adding 1 to match with display Farm ID
+  const fetchWasteListings = async (searchQuery = '') => {
+    try {
+      setIsLoading(true);
+      console.log('Fetching waste listings...');
+      
+      // Determine which endpoint to use based on search query
+      const url = searchQuery 
+        ? `https://knowcode-protobuf-backend.vercel.app/api/v1/waste/search?query=${encodeURIComponent(searchQuery)}`
+        : 'https://knowcode-protobuf-backend.vercel.app/api/v1/waste/all';
+
+      const response = await fetch(url);
+      const responseData = await response.json();
+      console.log('Raw response:', responseData);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch waste listings');
+      }
+
+      // Update data extraction based on API response structure
+      const listings = searchQuery 
+        ? responseData.data.wastes // For search endpoint
+        : responseData.data.waste; // For all listings endpoint
+
+      setWasteListings(Array.isArray(listings) ? listings : []);
+      console.log('Waste listings set:', listings);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err.message);
+      setWasteListings([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Update debounce timing for better UX
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchWasteListings(searchTerm);
+    }, 300); // Reduced to 300ms for faster response
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  // Remove the client-side filtering since we're using server-side search
+  const filteredListings = wasteListings;
+
+  // Add debug output
+  useEffect(() => {
+    console.log('Current wasteListings:', wasteListings);
+    console.log('Filtered listings:', filteredListings);
+  }, [wasteListings, filteredListings]);
 
   return (
     <motion.div 
-      initial={animateEntrance ? { 
-        scale: 1.2,
-        opacity: 0,
-        // rotate: -5
-      } : false}
-      animate={{ 
-        scale: 1,
-        opacity: 1,
-        rotate: 0
-      }}
-      transition={{ 
-        duration: 0.8,
-        ease: "easeOut"
-      }}
+      initial={animateEntrance ? { scale: 1.2, opacity: 0 } : false}
+      animate={{ scale: 1, opacity: 1, rotate: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
       className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-24 px-6 pb-20"
     >
       <div className="container mx-auto">
@@ -75,9 +96,16 @@ const Marketplace = () => {
             <Search className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by location, waste type..."
+              placeholder="Search by crop, waste type, location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-2 rounded-xl border border-green-100 focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white/70 backdrop-blur-sm"
             />
+            {isLoading && (
+              <div className="absolute right-4 top-3">
+                <Loader2 className="w-5 h-5 animate-spin text-green-600" />
+              </div>
+            )}
           </div>
           <button className="flex items-center space-x-2 px-6 py-2 bg-white/70 backdrop-blur-sm rounded-xl border border-green-100 text-green-700 hover:bg-green-50 transition-colors">
             <Filter className="h-5 w-5" />
@@ -85,65 +113,98 @@ const Marketplace = () => {
           </button>
         </div>
 
-        {/* Farmers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {farmersData.map((farmer, index) => (
-            <motion.div
-              key={index}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white/70 backdrop-blur-sm rounded-2xl border border-green-100 shadow-lg hover:shadow-xl transition-all p-6 group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center">
-                    <TreesIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">Farm ID #{index + 1}</h3>
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {farmer.location}
+        {/* Debug Information */}
+        {!isLoading && !error && filteredListings.length === 0 && (
+          <div className="text-center p-4 bg-yellow-50 rounded-xl mb-4">
+            No waste listings found. Total listings: {wasteListings.length}
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center text-red-600 p-4 bg-red-50 rounded-xl">
+            Error: {error}
+          </div>
+        )}
+
+        {/* Waste Listings Grid */}
+        {!isLoading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredListings.map((waste, index) => (
+              <motion.div
+                key={waste._id || index}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white/70 backdrop-blur-sm rounded-2xl border border-green-100 shadow-lg hover:shadow-xl transition-all p-6 group"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center">
+                      <TreesIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800 capitalize">{waste.cropType}</h3>
+                      <div className="flex items-center text-gray-600">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {waste.location.district}, {waste.location.state}
+                      </div>
                     </div>
                   </div>
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    waste.status === 'available' ? 'bg-green-100 text-green-700' :
+                    waste.status === 'booked' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {waste.status}
+                  </span>
                 </div>
-              </div>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Farm Size:</span>
-                  <span className="font-medium text-gray-800">{farmer.farmSize}</span>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Waste Type:</span>
+                    <span className="font-medium text-gray-800 capitalize">{waste.wasteType}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Quantity:</span>
+                    <span className="font-medium text-gray-800">{waste.quantity} {waste.unit}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Available From:</span>
+                    <span className="font-medium text-gray-800">
+                      {format(new Date(waste.availableFrom), 'dd MMM yyyy')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Price:</span>
+                    <span className="font-medium text-green-600">₹{waste.price}/{waste.unit}</span>
+                  </div>
+                  {waste.description && (
+                    <div className="text-sm text-gray-600">
+                      <p className="line-clamp-2">{waste.description}</p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Waste Types:</span>
-                  <span className="font-medium text-gray-800">{farmer.wasteTypes.join(", ")}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Available Quantity:</span>
-                  <span className="font-medium text-gray-800">{farmer.availableQuantity}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Price:</span>
-                  <span className="font-medium text-green-600">{farmer.price}</span>
-                </div>
-              </div>
 
-              <div className="flex justify-between items-center">
-                <button className="flex items-center space-x-2 text-green-600 hover:text-green-700">
-                  <Phone className="h-4 w-4" />
-                  <span>{farmer.phone}</span>
-                </button>
-                <button 
-                  onClick={() => handleContactFarmer(index)}
-                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all"
-                >
-                  Contact Farmer
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                {waste.status === 'available' && (
+                  <button 
+                    onClick={() => navigate(`/waste/${waste._id}`)}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all"
+                  >
+                    View Details
+                  </button>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );
