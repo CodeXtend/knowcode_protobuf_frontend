@@ -61,10 +61,6 @@ const Landing_sec5 = () => {
                 </motion.button>
               )}
             </div>
-
-            <p className="text-green-50/80 text-sm mt-8">
-              No credit card required · Free 14-day trial · Cancel anytime
-            </p>
           </motion.div>
         </div>
       </div>
