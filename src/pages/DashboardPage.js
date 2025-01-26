@@ -168,6 +168,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [predictions, setPredictions] = useState(null);
+  // Add new state for location data
+  const [locationData, setLocationData] = useState([]);
 
   // Calculate total values for quick stats
   const calculateTotals = (data) => {
@@ -191,12 +193,13 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [analyticsResponse, statsResponse] = await Promise.all([
+        const [analyticsResponse, statsResponse, locationsResponse] = await Promise.all([
           fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/analytics/monthly'),
-          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/stats')
+          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/dashboards/stats'),
+          fetch('https://knowcode-protobuf-backend.vercel.app/api/v1/waste/analytics/locations')
         ]);
 
-        if (!analyticsResponse.ok || !statsResponse.ok) {
+        if (!analyticsResponse.ok || !statsResponse.ok || !locationsResponse.ok) {
           throw new Error('Failed to fetch data');
         }
 
@@ -215,6 +218,19 @@ export default function Dashboard() {
 
         if (statsResult.status === 'success') {
           setStatsData(statsResult.data.stats);
+        }
+
+        // Handle locations data
+        const locationsResult = await locationsResponse.json();
+        if (locationsResult.status === 'success') {
+          const transformedLocations = locationsResult.data.stats.locations.map(loc => ({
+            name: loc.location,
+            value: loc.totalWaste,
+            percentage: parseFloat(loc.percentage),
+            listings: loc.listings,
+            averagePrice: loc.averagePrice
+          }));
+          setLocationData(transformedLocations);
         }
       } catch (err) {
         setError(err.message);
@@ -327,16 +343,16 @@ export default function Dashboard() {
     >
       <div className="container py-6">
         {/* Header Section */}
-        <motion.div variants={itemVariants} className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Agricultural Waste Management
-            </h1>
-            <p className="text-green-700/80">Transform waste into sustainable opportunities</p>
-          </div>
-        </motion.div>
+          <motion.div variants={itemVariants} className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-relaxed pb-1">
+                Agricultural Waste Management
+              </h1>
+              <p className="text-green-700/80">Transform waste into sustainable opportunities</p>
+            </div>
+          </motion.div>
 
-        {/* Quick Stats */}
+          {/* Quick Stats */}
         <motion.div variants={itemVariants} className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <QuickStatCard
             icon={<Recycle />}
@@ -424,94 +440,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Replace Recent Activity with Location Waste Distribution */}
-          <Card className="col-span-3 overflow-hidden">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-green-800">Waste by Location</CardTitle>
-                <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                  Top 10 Cities
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="relative h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={SAMPLE_LOCATION_DATA}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={3}
-                        dataKey="value"
-                        nameKey="name"
-                        startAngle={90}
-                        endAngle={450}
-                      >
-                        {SAMPLE_LOCATION_DATA.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={COLORS[index % COLORS.length]}
-                            className="hover:opacity-80 transition-opacity"
-                            stroke="white"
-                            strokeWidth={2}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        content={({ payload, label }) => {
-                          if (payload && payload.length) {
-                            return (
-                              <div className="bg-white p-2 shadow-lg rounded-lg border">
-                                <p className="font-medium text-sm">{payload[0].name}</p>
-                                <p className="text-green-600 font-semibold">
-                                  {payload[0].value.toLocaleString()} MT
-                                </p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                    <div className="text-2xl font-bold text-gray-800">
-                      {SAMPLE_LOCATION_DATA.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">Total MT</div>
-                  </div>
-                </div>
-                <div className="space-y-1 max-h-[240px] overflow-y-auto custom-scrollbar">
-                  {SAMPLE_LOCATION_DATA.map((item, index) => (
-                    <LocationStatItem
-                      key={item.name}
-                      name={item.name}
-                      value={item.value}
-                      color={COLORS[index % COLORS.length]}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span>Updated daily</span>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-1 text-green-600 hover:text-green-700"
-                  >
-                    <Filter className="h-3 w-3" />
-                    <span>Filter data</span>
-                  </motion.button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <LocationCard locationData={locationData} />
         </motion.div>
 
         {/* Environmental Impact Section */}
@@ -621,7 +550,7 @@ const PredictionCard = ({ title, prediction, confidence }) => (
 );
 
 // Add this new component for location stats
-const LocationStatItem = ({ name, value, color, index }) => (
+const LocationStatItem = ({ name, value, percentage, color, index }) => (
   <motion.div
     initial={{ x: -20, opacity: 0 }}
     animate={{ x: 0, opacity: 1 }}
@@ -632,7 +561,10 @@ const LocationStatItem = ({ name, value, color, index }) => (
       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
       <span className="text-sm font-medium text-gray-700">{name}</span>
     </div>
-    <span className="text-sm text-gray-600 font-semibold">{value.toLocaleString()} MT</span>
+    <div className="text-right">
+      <span className="text-sm text-gray-600 font-semibold">{value.toLocaleString()} MT</span>
+      <div className="text-xs text-gray-400">{percentage}%</div>
+    </div>
   </motion.div>
 );
 
@@ -657,4 +589,102 @@ const styles = `
     border-radius: 3px;
   }
 `;
+
+// Replace the Location Waste Distribution card content
+const LocationCard = ({ locationData }) => (
+  <Card className="col-span-3 overflow-hidden">
+    <CardHeader>
+      <div className="flex items-center justify-between">
+        <CardTitle className="text-green-800">Waste by Location</CardTitle>
+        <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+          {locationData.length} Districts
+        </div>
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="relative h-[240px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={locationData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={3}
+                dataKey="value"
+                nameKey="name"
+                startAngle={90}
+                endAngle={450}
+              >
+                {locationData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]}
+                    className="hover:opacity-80 transition-opacity"
+                    stroke="white"
+                    strokeWidth={2}
+                  />
+                ))}
+              </Pie>
+              <Tooltip 
+                content={({ payload }) => {
+                  if (payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-white p-3 shadow-lg rounded-lg border z-[60]">
+                        <p className="font-medium text-sm">{data.name}</p>
+                        <p className="text-green-600 font-semibold">
+                          {data.value.toLocaleString()} MT
+                        </p>
+                        <div className="text-xs text-gray-500 mt-1">
+                          <div>{data.listings} Listings</div>
+                          <div>₹{data.averagePrice}/MT Avg.</div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+                wrapperStyle={{ zIndex: 100 }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-[40]">
+            <div className="text-2xl font-bold text-gray-800">
+              {locationData.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-500">Total MT</div>
+          </div>
+        </div>
+        <div className="space-y-1 max-h-[240px] overflow-y-auto custom-scrollbar">
+          {locationData.map((item, index) => (
+            <LocationStatItem
+              key={item.name}
+              name={item.name}
+              value={item.value}
+              percentage={item.percentage}
+              color={COLORS[index % COLORS.length]}
+              index={index}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mt-4 pt-4 border-t">
+        <div className="flex justify-between items-center text-xs text-gray-500">
+          <span>Live data</span>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-1 text-green-600 hover:text-green-700"
+          >
+            <Filter className="h-3 w-3" />
+            <span>Filter districts</span>
+          </motion.button>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
 

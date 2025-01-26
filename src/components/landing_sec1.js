@@ -8,7 +8,7 @@ const Landing_sec1 = () => {
 
   const handleGetStarted = () => {
     // Trigger exit animation and navigate to marketplace
-    navigate('/marketplace', { 
+    navigate('/role-selection', { 
       state: { animateEntrance: true } 
     });
   };

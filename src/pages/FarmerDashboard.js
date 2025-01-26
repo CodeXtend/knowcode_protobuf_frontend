@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import {  Calendar } from 'lucide-react';
 import { 
   User, MapPin, Phone, TreePine, Scale, 
-  Package, Plus, Trash2, Mail, Sprout, BarChart, Award
+  Package, Plus, Trash2, Mail, Sprout, BarChart, Award, CheckCircle, MoreVertical, Edit2
 } from 'lucide-react';
 
 const FarmerDashboard = () => {
@@ -15,55 +15,71 @@ const FarmerDashboard = () => {
   const [error, setError] = useState(null);
   const [showAddWasteModal, setShowAddWasteModal] = useState(false);
   const [newWaste, setNewWaste] = useState({
-    type: '',
+    cropType: '',
+    wasteType: 'straw',
     quantity: '',
+    unit: 'kg',
     price: '',
     availableFrom: '',
-    description: ''
+    location: {
+      address: '',
+      district: '',
+      state: '',
+      pincode: ''
+    },
+    description: '',
+    images: []
   });
   const [wasteListing, setWasteListing] = useState([]);
+  const [selectedWaste, setSelectedWaste] = useState(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+
+  const wasteTypes = ['straw', 'husk', 'leaves', 'stalks', 'other'];
+  const units = ['kg', 'ton', 'quintal'];
+  const statusOptions = ['available', 'booked', 'sold', 'cancelled'];
 
   useEffect(() => {
-    const fetchFarmerData = async () => {
+    const fetchAllData = async () => {
       if (!user?.sub) return;
+      const auth0Id = user.sub.split('|')[1];
 
       try {
-        const auth0Id = user.sub.split('|')[1];
-        const response = await fetch(
+        setIsLoading(true);
+        
+        // Fetch farmer details
+        const farmerResponse = await fetch(
           `https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/users/data/${auth0Id}`
         );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch farmer data');
+        // Fetch farmer waste listings
+        const wasteResponse = await fetch(
+          `https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/waste/farmer/${auth0Id}`
+        );
+
+        if (!farmerResponse.ok || !wasteResponse.ok) {
+          throw new Error('Failed to fetch data');
         }
 
-        const { data } = await response.json();
-        setFarmer({
-          name: data.name,
-          phone: data.phone,
-          location: data.location,
-          picture: data.picture,
-          farmDetails: {
-            farmSize: data.farmDetails.farmSize,
-            farmType: data.farmDetails.farmType,
-            primaryCrops: data.farmDetails.primaryCrops,
-            address: data.farmDetails.address
-          }
-        });
+        const { data: farmerData } = await farmerResponse.json();
+        const wasteData = await wasteResponse.json();
 
-        // Set waste listings if they exist
-        if (data.wasteListing && Array.isArray(data.wasteListing)) {
-          setWasteListing(data.wasteListing);
-        }
+        setFarmer(farmerData);
+
+        // Ensure wasteListing is always an array
+        const wasteList = wasteData?.data?.farmerWaste?.recentListings || [];
+        console.log('Waste data received:', wasteList); // Debug log
+        setWasteListing(Array.isArray(wasteList) ? wasteList : []);
+
       } catch (err) {
+        console.error('Error details:', err); // Debug log
         setError(err.message);
-        console.error('Error fetching farmer data:', err);
+        setWasteListing([]); // Set empty array on error
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchFarmerData();
+    fetchAllData();
   }, [user]);
 
   // Loading state
@@ -95,17 +111,110 @@ const FarmerDashboard = () => {
     );
   }
 
-  const handleAddWaste = (e) => {
+  const handleAddWaste = async (e) => {
     e.preventDefault();
-    setWasteListing([...wasteListing, { ...newWaste, id: Date.now() }]);
-    setNewWaste({
-      type: '',
-      quantity: '',
-      price: '',
-      availableFrom: '',
-      description: ''
-    });
-    setShowAddWasteModal(false);
+    try {
+      const formData = {
+        ...newWaste,
+        auth0Id: user.sub.split('|')[1],
+        quantity: Number(newWaste.quantity),
+        price: Number(newWaste.price),
+        status: 'available'
+      };
+
+      const response = await fetch('https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/waste/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        // Add new waste to the list with the returned data
+        setWasteListing([...wasteListing, data.data]);
+        setShowAddWasteModal(false);
+        
+        // Reset form
+        setNewWaste({
+          cropType: '',
+          wasteType: 'straw',
+          quantity: '',
+          unit: 'kg',
+          price: '',
+          availableFrom: '',
+          location: {
+            address: '',
+            district: '',
+            state: '',
+            pincode: ''
+          },
+          description: '',
+          images: []
+        });
+
+        // Show success message
+        alert('Waste listing added successfully!');
+      }
+    } catch (error) {
+      console.error('Error adding waste:', error);
+      alert('Failed to add waste listing: ' + error.message);
+    }
+  };
+
+  const handleStatusUpdate = async (wasteId, newStatus) => {
+    try {
+      const auth0Id = user.sub.split('|')[1];
+      
+      const response = await fetch(
+        `https://knowcode-protobuf-backend-k16r.vercel.app/api/v1/waste/${wasteId}/status`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: newStatus,
+            auth0Id: auth0Id,
+            wasteId: wasteId
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update status');
+      }
+
+      // Update local state only if API call was successful
+      setWasteListing(wasteListing.map(waste => 
+        waste._id === wasteId ? { ...waste, status: newStatus } : waste
+      ));
+
+      setShowStatusModal(false);
+      alert('Status updated successfully!');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert(error.message || 'Failed to update status. Please try again.');
+    }
+  };
+
+  // Add error handling for the status update modal
+  const openStatusModal = (waste) => {
+    if (waste.auth0Id !== user.sub.split('|')[1]) {
+      alert('You can only update your own waste listings');
+      return;
+    }
+    setSelectedWaste(waste);
+    setShowStatusModal(true);
   };
 
   return (
@@ -115,58 +224,55 @@ const FarmerDashboard = () => {
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8"
+          className="bg-gradient-to-br from-white/90 via-white/70 to-white/50 backdrop-blur-xl rounded-3xl shadow-lg p-8 mb-8 border border-white/20"
         >
-          <div className="flex items-start gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center overflow-hidden">
-              {farmer.picture ? (
-                <img 
-                  src={farmer.picture} 
-                  alt={farmer.name} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-10 h-10 text-white" />
-              )}
+          {/* Header Section */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Profile Picture Section */}
+            <div className="relative">
+              <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 p-1">
+                {farmer.picture ? (
+                  <img 
+                    src={farmer.picture} 
+                    alt={farmer.name} 
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <User className="w-12 h-12 text-emerald-600" />
+                  </div>
+                )}
+                <div className="absolute -bottom-2 -right-2 bg-blue-500 rounded-full p-1.5">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">{farmer.name}</h1>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4" />
-                  {farmer.location}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone className="w-4 h-4" />
-                  {farmer.phone}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Mail className="w-4 h-4" />
-                  {farmer.email}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <TreePine className="w-4 h-4" />
-                  {farmer.farmDetails.farmType}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Scale className="w-4 h-4" />
-                  {farmer.farmDetails.farmSize}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="w-4 h-4" />
-                  {farmer.experience} Years Experience
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Sprout className="w-4 h-4" />
-                  {farmer.primaryCrops}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <BarChart className="w-4 h-4" />
-                  Annual Revenue: ₹{farmer.revenue}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Award className="w-4 h-4" />
-                  {farmer.certification || 'No Certifications'}
+
+            {/* Basic Info Section */}
+            <div className="flex-1 space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    {farmer.name}
+                  </h1>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Phone className="w-4 h-4" />
+                      {farmer.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Mail className="w-4 h-4" />
+                      {farmer.email}
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Scale className="w-4 h-4" />
+                      {farmer.farmDetails.farmSize}
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Sprout className="w-4 h-4" />
+                      {farmer.farmDetails.primaryCrops}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -186,40 +292,82 @@ const FarmerDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wasteListing.map((waste) => (
-            <motion.div
-              key={waste.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-green-100"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-semibold text-gray-800">{waste.type}</h3>
-                  <p className="text-sm text-gray-500">Available from {waste.availableFrom}</p>
+          {Array.isArray(wasteListing) && wasteListing.length > 0 ? (
+            wasteListing.map((waste) => (
+              <motion.div
+                key={waste._id || `waste-${Date.now()}-${Math.random()}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-green-100"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full capitalize">
+                      {waste.wasteType}
+                    </span>
+                    <h3 className="font-semibold text-gray-800 mt-2">{waste.cropType}</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded-lg text-xs ${
+                      waste.status === 'available' ? 'bg-green-100 text-green-700' :
+                      waste.status === 'booked' ? 'bg-yellow-100 text-yellow-700' :
+                      waste.status === 'sold' ? 'bg-blue-100 text-blue-700' :
+                      'bg-red-100 text-red-700'
+                    } capitalize`}>
+                      {waste.status}
+                    </span>
+                    {waste.auth0Id === user.sub.split('|')[1] && (
+                      <button
+                        onClick={() => openStatusModal(waste)}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4 text-gray-500" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <button 
-                  onClick={() => {
-                    setWasteListing(wasteListing.filter(w => w.id !== waste.id));
-                  }}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Quantity:</span>
-                  <span className="font-medium">{waste.quantity}</span>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Quantity</span>
+                    <span className="font-medium">{waste.quantity} {waste.unit}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Price</span>
+                    <span className="font-medium text-green-600">₹{waste.price}/{waste.unit}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-gray-600">Available From</span>
+                    <span className="font-medium">{new Date(waste.availableFrom).toLocaleDateString()}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Price:</span>
-                  <span className="font-medium text-green-600">{waste.price}</span>
+
+                {waste.description && (
+                  <p className="mt-4 text-sm text-gray-600 italic">"{waste.description}"</p>
+                )}
+
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-gray-400 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-600">{waste.location.district}, {waste.location.state}</p>
+                      <p className="text-xs text-gray-500">PIN: {waste.location.pincode}</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 mt-2">{waste.description}</p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-8">
+              <p className="text-gray-500 mb-4">No waste listings available</p>
+              <button
+                onClick={() => setShowAddWasteModal(true)}
+                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+              >
+                Add Your First Listing
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Add Waste Modal */}
@@ -228,52 +376,134 @@ const FarmerDashboard = () => {
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-2xl p-6 max-w-md w-full"
+              className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-xl font-semibold mb-4">Add New Waste Listing</h3>
               <form onSubmit={handleAddWaste} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Waste Type</label>
-                  <input
-                    type="text"
-                    value={newWaste.type}
-                    onChange={(e) => setNewWaste({...newWaste, type: e.target.value})}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Crop Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
                     <input
                       type="text"
-                      value={newWaste.quantity}
-                      onChange={(e) => setNewWaste({...newWaste, quantity: e.target.value})}
+                      value={newWaste.cropType}
+                      onChange={(e) => setNewWaste({...newWaste, cropType: e.target.value})}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
                       required
                     />
                   </div>
+
+                  {/* Waste Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Waste Type</label>
+                    <select
+                      value={newWaste.wasteType}
+                      onChange={(e) => setNewWaste({...newWaste, wasteType: e.target.value})}
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 capitalize"
+                      required
+                    >
+                      {wasteTypes.map(type => (
+                        <option key={type} value={type} className="capitalize">{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Quantity and Unit */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={newWaste.quantity}
+                        onChange={(e) => setNewWaste({...newWaste, quantity: e.target.value})}
+                        className="w-2/3 p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                        required
+                      />
+                      <select
+                        value={newWaste.unit}
+                        onChange={(e) => setNewWaste({...newWaste, unit: e.target.value})}
+                        className="w-1/3 p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                        required
+                      >
+                        {units.map(unit => (
+                          <option key={unit} value={unit}>{unit}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹ per unit)</label>
                     <input
-                      type="text"
+                      type="number"
                       value={newWaste.price}
                       onChange={(e) => setNewWaste({...newWaste, price: e.target.value})}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
                       required
                     />
                   </div>
+
+                  {/* Available From */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Available From</label>
+                    <input
+                      type="date"
+                      value={newWaste.availableFrom}
+                      onChange={(e) => setNewWaste({...newWaste, availableFrom: e.target.value})}
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                      required
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Available From</label>
-                  <input
-                    type="date"
-                    value={newWaste.availableFrom}
-                    onChange={(e) => setNewWaste({...newWaste, availableFrom: e.target.value})}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
-                    required
-                  />
+
+                {/* Location Details */}
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="font-medium text-gray-700 mb-3">Location Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                      <input
+                        type="text"
+                        value={newWaste.location.district}
+                        onChange={(e) => setNewWaste({
+                          ...newWaste,
+                          location: { ...newWaste.location, district: e.target.value }
+                        })}
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                      <input
+                        type="text"
+                        value={newWaste.location.state}
+                        onChange={(e) => setNewWaste({
+                          ...newWaste,
+                          location: { ...newWaste.location, state: e.target.value }
+                        })}
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                      <input
+                        type="text"
+                        value={newWaste.location.pincode}
+                        onChange={(e) => setNewWaste({
+                          ...newWaste,
+                          location: { ...newWaste.location, pincode: e.target.value }
+                        })}
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
@@ -281,10 +511,10 @@ const FarmerDashboard = () => {
                     onChange={(e) => setNewWaste({...newWaste, description: e.target.value})}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
                     rows="3"
-                    required
                   />
                 </div>
-                <div className="flex justify-end gap-4">
+
+                <div className="flex justify-end gap-4 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => setShowAddWasteModal(false)}
@@ -294,12 +524,51 @@ const FarmerDashboard = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                   >
                     Add Listing
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Status Update Modal */}
+        {showStatusModal && selectedWaste && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-xl p-6 max-w-md w-full"
+            >
+              <h3 className="text-xl font-semibold mb-4">Update Status</h3>
+              <p className="text-gray-600 mb-4">
+                Current status: <span className="font-medium capitalize">{selectedWaste.status}</span>
+              </p>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {statusOptions.map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => handleStatusUpdate(selectedWaste._id, status)}
+                    className={`p-3 rounded-lg border-2 capitalize ${
+                      selectedWaste.status === status
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 hover:border-green-500 hover:bg-green-50'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowStatusModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

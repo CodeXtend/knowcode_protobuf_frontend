@@ -41,14 +41,14 @@ const TopNavigation = () => {
   
   const navItems = [
     {
-      href: "/dashboard",
-      label: "Dashboard",
-      icon: <BarChart2 className="w-4 h-4" />,
-    },
-    {
       href: "/role-selection",
       label: "Marketplace",
       icon: <ShoppingBag className="w-4 h-4" />,
+    },
+    {
+      href: "/dashboard",
+      label: "Dashboard",
+      icon: <BarChart2 className="w-4 h-4" />,
     },
     {
       href: "/learn",
