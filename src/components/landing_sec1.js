@@ -63,7 +63,7 @@ const Landing_sec1 = () => {
             className="relative"
           >
             <Sparkles className="absolute -top-6 -left-6 text-yellow-400 w-8 sm:w-12 h-8 sm:h-12 animate-pulse" />
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent leading-tight py-2">
               Greenify: Transforming Agricultural Waste
             </h1>
           </motion.div>
